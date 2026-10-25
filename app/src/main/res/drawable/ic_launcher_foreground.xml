@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Monogramme Rengaine (U4), tracés du logo du site (viewBox 32) mis à
+     l'échelle : le carré de 32 couvre les 72 dp visibles de l'icône
+     adaptative, le dessin reste dans la zone sûre de 66 dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="2.25"
+        android:scaleY="2.25"
+        android:translateX="18"
+        android:translateY="18">
+        <path
+            android:pathData="M24.08,13.06A8.6,8.6 0,1 1,14.51 7.53"
+            android:strokeColor="@color/brand_on_ember"
+            android:strokeWidth="3"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="@color/brand_on_ember"
+            android:pathData="M19.04,6.73L13.88,3.99l1.25,7.09z" />
+        <path
+            android:fillColor="@color/brand_on_ember"
+            android:pathData="M16,13.3a2.7,2.7 0,1 1,0 5.4a2.7,2.7 0,1 1,0 -5.4z" />
+    </group>
+</vector>

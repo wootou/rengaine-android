@@ -1,0 +1,15 @@
+{
+  "uniqueId": "bricolage-grotesque",
+  "artifactVersion": "",
+  "name": "Bricolage Grotesque",
+  "description": "Typeface of the app.",
+  "website": "https://github.com/ateliertriay/bricolage",
+  "developers": [
+    {
+      "name": "The Bricolage Grotesque Project Authors"
+    }
+  ],
+  "licenses": [
+    "OFL-1.1"
+  ]
+}

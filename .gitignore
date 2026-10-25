@@ -1,0 +1,36 @@
+# Gradle et Kotlin
+.gradle/
+.kotlin/
+build/
+/local.properties
+
+# Android Studio et IntelliJ
+.idea/
+*.iml
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+/captures/
+.externalNativeBuild/
+.cxx/
+*.hprof
+*.log
+.DS_Store
+
+# APK et bundles (publiés dans les releases GitHub, jamais versionnés)
+/dist/
+*.apk
+*.aab
+output-metadata.json
+
+# Signature : jamais dans le dépôt (le keystore vit hors du dossier).
+keystore.properties
+*.keystore
+*.jks
+
+# Services Google : l'app n'en utilise pas.
+google-services.json
+
+# Notes de l'environnement de travail (adresses du serveur de dev, téléphone
+# de lab, chemins de la machine) : restent sur le disque, hors du dépôt.
+/CLAUDE.md

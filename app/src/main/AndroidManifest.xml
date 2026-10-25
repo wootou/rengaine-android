@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Lecture en arrière-plan (S2) : service de premier plan « lecture
+         multimédia ». La notification de lecture n'a pas besoin de
+         POST_NOTIFICATIONS : Android en exempte les sessions multimédias. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Lecture du QR d'appairage seulement (P4). -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
+    <!-- Pas de REQUEST_INSTALL_PACKAGES : interdit par le Play Store (S4). -->
+
+    <!-- Pas de sauvegarde Android : les jetons sont chiffrés par une clé du
+         Keystore qui ne quitte pas le téléphone, une base restaurée ailleurs
+         serait illisible. Sur un nouveau téléphone, on se reconnecte. -->
+    <application
+        android:name=".RengaineApplication"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
+        android:theme="@style/Theme.Rengaine">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Rengaine.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- QR d'appairage du site : rengaine://pair?server=…&code=…
+                 (schéma figé depuis le contrat 2.19.1). Scanné avec
+                 l'appareil photo d'Android, il ouvre l'app directement. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="rengaine" android:host="pair" />
+            </intent-filter>
+        </activity>
+
+        <!-- Exporté : la notification, l'écran verrouillé, les casques
+             Bluetooth et Android Auto s'y connectent par MediaSession. -->
+        <service
+            android:name=".playback.PlaybackService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>

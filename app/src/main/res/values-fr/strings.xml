@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_tagline">Votre musique, en boucle.</string>
+
+    <string name="action_back">Retour</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_ok">OK</string>
+    <string name="action_save">Enregistrer</string>
+
+    <string name="login_server_label">Adresse du serveur</string>
+    <string name="login_server_placeholder">musique.exemple.fr</string>
+    <string name="login_email_label">Adresse e-mail</string>
+    <string name="login_password_label">Mot de passe</string>
+    <string name="login_show_password">Afficher le mot de passe</string>
+    <string name="login_hide_password">Masquer le mot de passe</string>
+    <string name="login_submit">Se connecter</string>
+    <string name="login_signing_in">Connexion en cours</string>
+    <string name="login_forgot">Mot de passe oublié ?</string>
+    <string name="login_or">ou</string>
+    <string name="login_scan_qr">Scanner un QR code</string>
+    <string name="login_request_account">Pas encore de compte ? Faire une demande</string>
+    <string name="login_device_name">Cet appareil apparaîtra sous le nom « %1$s »</string>
+    <string name="login_device_rename">Renommer cet appareil</string>
+
+    <string name="server_checking">Vérification du serveur…</string>
+    <string name="server_ready">Serveur trouvé : %1$s</string>
+    <string name="server_invalid">Saisissez une adresse valide, par exemple musique.exemple.fr.</string>
+    <string name="server_cleartext_warning">Connexion non chiffrée : avec http://, votre mot de passe et votre musique passent en clair sur le réseau. Préférez https:// si votre serveur le permet.</string>
+    <string name="server_unreachable">Serveur injoignable. Vérifiez l’adresse et votre connexion.</string>
+    <string name="server_certificate">Android ne reconnaît pas le certificat de sécurité de ce serveur.</string>
+    <string name="server_not_rengaine">Aucun serveur Rengaine à cette adresse.</string>
+    <string name="server_too_old">Ce serveur utilise une version trop ancienne (%1$s). Demandez à son administrateur de le mettre à jour.</string>
+    <string name="server_too_new">Ce serveur est plus récent que l’app (%1$s). Mettez Rengaine à jour.</string>
+    <string name="server_error">Le serveur a rencontré un problème (erreur %1$d). Réessayez dans un instant.</string>
+
+    <string name="error_invalid_credentials">Adresse e-mail ou mot de passe incorrect.</string>
+    <string name="error_invalid_code">Ce code est invalide ou a expiré. Créez-en un autre sur le site : Réglages › Appareils connectés › « Appairer un appareil ».</string>
+    <string name="error_account_pending">Votre compte attend la validation de l’administrateur.</string>
+    <string name="error_account_suspended">Ce compte est suspendu. Contactez l’administrateur du serveur.</string>
+    <string name="error_account_locked">Trop d’essais infructueux. Réessayez dans quelques minutes.</string>
+    <plurals name="error_account_locked_minutes">
+        <item quantity="one">Trop d’essais infructueux. Réessayez dans %d minute.</item>
+        <item quantity="many">Trop d’essais infructueux. Réessayez dans %d minutes.</item>
+        <item quantity="other">Trop d’essais infructueux. Réessayez dans %d minutes.</item>
+    </plurals>
+    <string name="error_rate_limited">Trop de tentatives. Patientez un instant avant de réessayer.</string>
+    <string name="error_unexpected">Une erreur est survenue (erreur %1$d).</string>
+    <string name="error_unexpected_generic">Une erreur est survenue.</string>
+    <string name="error_request_id">Référence : %1$s</string>
+
+    <string name="forgot_title">Mot de passe oublié</string>
+    <string name="forgot_text">Vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Il est valable une heure.</string>
+    <string name="forgot_send">Envoyer le lien</string>
+    <string name="forgot_sent">Si un compte existe pour %1$s, un e-mail est en route.</string>
+    <string name="forgot_failed">La demande n’a pas pu être envoyée. Réessayez dans un instant.</string>
+
+    <string name="device_name_title">Nom de cet appareil</string>
+    <string name="device_name_text">Il apparaît dans la liste des appareils connectés, sur le site de votre serveur.</string>
+    <string name="device_name_label">Nom</string>
+
+    <string name="reauth_text">Votre session sur %1$s a pris fin : cet appareil a été déconnecté depuis le site, ou le mot de passe a changé. Reconnectez-vous.</string>
+    <string name="reauth_other_account">Utiliser un autre compte</string>
+
+    <string name="scan_title">Scanner le QR code</string>
+    <string name="scan_hint">Sur le site de votre serveur, ouvrez Réglages (roue dentée en haut à droite), puis Appareils connectés › « Appairer un appareil ». Visez ensuite le QR code.</string>
+    <string name="scan_pairing">Connexion…</string>
+    <string name="scan_not_pairing">Ce QR code n’est pas un code d’appairage Rengaine.</string>
+    <string name="scan_retry">Scanner à nouveau</string>
+    <string name="scan_enter_code">Saisir le code</string>
+    <string name="scan_permission_title">Accès à l’appareil photo</string>
+    <string name="scan_permission_text">Rengaine n’utilise l’appareil photo que pour lire le QR code d’appairage.</string>
+    <string name="scan_permission_grant">Autoriser l’appareil photo</string>
+    <string name="scan_permission_settings">Ouvrir les réglages</string>
+    <string name="code_title">Saisir le code d’appairage</string>
+    <string name="code_text">Recopiez l’adresse et le code affichés sous le QR code, dans « Serveur » et « Code ». Le code est valable 5 minutes.</string>
+    <string name="code_label">Code</string>
+    <string name="pair_confirm_title">Se connecter à ce serveur ?</string>
+    <string name="pair_confirm_text">Un lien d’appairage demande de connecter cet appareil à %1$s. Ne continuez que si vous venez de le créer vous-même.</string>
+
+    <string name="accounts_title">Comptes</string>
+    <string name="accounts_active">Actif</string>
+    <string name="accounts_needs_reauth">À reconnecter</string>
+    <string name="accounts_add">Ajouter un compte</string>
+    <string name="accounts_sign_out">Se déconnecter</string>
+    <string name="accounts_sign_out_title">Se déconnecter de %1$s ?</string>
+    <string name="accounts_sign_out_text">Cet appareil sera retiré des appareils connectés du compte. Votre musique, vos playlists et vos réglages restent sur le serveur.</string>
+    <string name="account_server_line">%1$s · %2$s</string>
+    <string name="home_play_random">Écouter au hasard</string>
+    <string name="home_random_failed">Impossible de tirer des morceaux. Vérifiez la connexion, puis réessayez.</string>
+    <string name="home_random_empty">La bibliothèque ne contient encore aucun morceau lisible.</string>
+    <string name="player_play">Lecture</string>
+    <string name="player_pause">Pause</string>
+    <string name="player_next">Morceau suivant</string>
+    <!-- Bibliothèque (F2) -->
+    <string name="action_retry">Réessayer</string>
+    <string name="state_load_failed">Impossible de charger cette page. Vérifiez la connexion, puis réessayez.</string>
+    <string name="tab_albums">Albums</string>
+    <string name="tab_artists">Artistes</string>
+    <string name="tab_explore">Explorer</string>
+    <string name="tab_random">Aléatoire</string>
+    <string name="tab_playlists">Playlists</string>
+    <string name="tab_coming_soon">Cet onglet arrive dans une prochaine version de l’app.</string>
+    <string name="albums_show_list">Afficher en liste</string>
+    <string name="albums_show_grid">Afficher en grille</string>
+    <string name="albums_title">Albums</string>
+    <string name="albums_none">La bibliothèque ne contient encore aucun album.</string>
+    <string name="albums_none_filtered">Aucun album ne correspond à ces filtres.</string>
+    <string name="albums_sort_label">Tri</string>
+    <string name="albums_genre_label">Genre</string>
+    <string name="albums_year_label">Années</string>
+    <string name="albums_sort_name">Nom</string>
+    <string name="albums_sort_added">Ajouts récents</string>
+    <string name="albums_sort_year">Année</string>
+    <string name="albums_sort_artist">Artiste</string>
+    <string name="albums_all_genres">Tous les genres</string>
+    <string name="albums_all_years">Toutes les années</string>
+    <string name="decade_label">Années %1$d</string>
+    <string name="album_kind_album">Album</string>
+    <string name="album_kind_compilation">Compilation</string>
+    <string name="album_kind_loose">Pistes en vrac</string>
+    <string name="album_disc">Disque %1$d</string>
+    <plurals name="track_count">
+        <item quantity="one">%1$d piste</item>
+        <item quantity="many">%1$d pistes</item>
+        <item quantity="other">%1$d pistes</item>
+    </plurals>
+    <string name="action_play_album">Lire l’album</string>
+    <string name="action_shuffle">Lecture aléatoire</string>
+    <string name="action_play_next">Lire ensuite</string>
+    <string name="action_add_to_queue">Ajouter à la file</string>
+    <string name="track_now_playing">En cours de lecture</string>
+    <string name="track_unavailable">Fichier introuvable sur le serveur</string>
+    <string name="track_actions">Actions pour « %1$s »</string>
+    <!-- Lecteur et file (U7 12, 13) -->
+    <string name="player_open">Ouvrir le lecteur</string>
+    <string name="player_close">Réduire le lecteur</string>
+    <string name="player_now_playing">En lecture</string>
+    <string name="player_previous">Morceau précédent</string>
+    <string name="player_repeat">Répétition</string>
+    <string name="player_repeat_off">Désactivée</string>
+    <string name="player_repeat_all">Toute la file</string>
+    <string name="player_repeat_one">Ce morceau</string>
+    <string name="player_bpm">%1$d BPM</string>
+    <string name="player_seek">Position</string>
+    <string name="settings_waveform">Forme d’onde dans le lecteur sur cet appareil</string>
+    <string name="settings_volume_bar">Curseur de volume dans le lecteur sur cet appareil</string>
+    <string name="player_position">%1$s sur %2$s</string>
+    <string name="key_major">%1$s majeur</string>
+    <string name="key_minor">%1$s mineur</string>
+    <string-array name="note_names">
+        <item>Do</item><item>Ré</item><item>Mi</item><item>Fa</item><item>Sol</item><item>La</item><item>Si</item>
+    </string-array>
+    <string name="queue_title">File d’attente</string>
+    <plurals name="queue_summary">
+        <item quantity="one">%1$d piste · %2$s restantes</item>
+        <item quantity="many">%1$d pistes · %2$s restantes</item>
+        <item quantity="other">%1$d pistes · %2$s restantes</item>
+    </plurals>
+    <plurals name="queue_open">
+        <item quantity="one">File d’attente, %1$d piste</item>
+        <item quantity="many">File d’attente, %1$d pistes</item>
+        <item quantity="other">File d’attente, %1$d pistes</item>
+    </plurals>
+    <string name="queue_up_next">À suivre</string>
+    <string name="queue_clear_upcoming">Vider la suite</string>
+    <string name="queue_empty">La file est vide.</string>
+    <string name="queue_remove">Retirer « %1$s » de la file</string>
+    <string name="queue_move_up">Monter</string>
+    <string name="queue_move_down">Descendre</string>
+    <!-- Playlists (F10) et favoris (F9) -->
+    <string name="playlists_mine">Mes playlists</string>
+    <string name="playlists_shared">Partagées par les autres comptes</string>
+    <string name="playlist_new">Nouvelle playlist</string>
+    <string name="playlist_name">Nom de la playlist</string>
+    <string name="playlist_rename">Renommer</string>
+    <string name="playlist_delete">Supprimer</string>
+    <string name="playlist_delete_title">Supprimer « %1$s » ?</string>
+    <string name="playlist_delete_text">La playlist disparaît pour tous les comptes avec qui elle est partagée. Les morceaux restent dans la bibliothèque.</string>
+    <string name="playlist_kind_private">Playlist privée</string>
+    <string name="playlist_kind_shared">Playlist partagée</string>
+    <string name="playlist_shared_by">Partagée par %1$s</string>
+    <string name="playlist_share_toggle">Partager avec tous les comptes</string>
+    <string name="playlist_empty">Cette playlist est vide. Ajoutez-y des morceaux depuis un album avec « Ajouter à une playlist ».</string>
+    <string name="playlist_remove_track">Retirer de la playlist</string>
+    <string name="playlist_add_title">Ajouter à une playlist</string>
+    <string name="playlist_add_failed">Impossible d’ajouter à la playlist. Réessayez.</string>
+    <plurals name="playlist_added">
+        <item quantity="one">%1$d morceau ajouté à « %2$s »</item>
+        <item quantity="many">%1$d morceaux ajoutés à « %2$s »</item>
+        <item quantity="other">%1$d morceaux ajoutés à « %2$s »</item>
+    </plurals>
+    <string name="action_add_to_playlist">Ajouter à une playlist</string>
+    <string name="action_play_playlist">Lire la playlist</string>
+    <string name="favorites_title">Mes favoris</string>
+    <string name="favorites_subtitle">Pistes, albums et artistes</string>
+    <string name="favorites_tracks">Pistes %1$d</string>
+    <string name="favorites_albums">Albums %1$d</string>
+    <string name="favorites_no_tracks">Aucune piste en favori. Touchez le ♡ d’une piste pour la retrouver ici.</string>
+    <string name="favorites_no_artists">Aucun artiste en favori. Touchez le ♡ d’un artiste pour le retrouver ici.</string>
+    <string name="favorites_artists">Artistes %1$d</string>
+    <string name="favorites_no_albums">Aucun album en favori. Touchez le ♡ d’un album pour le retrouver ici.</string>
+    <!-- Artistes, Explorer, mode infini (F2, F5) -->
+    <string name="artists_filter_label">Filtrer les artistes</string>
+    <string name="artists_filter">Filtrer…</string>
+    <string name="artists_none">La bibliothèque ne contient encore aucun artiste.</string>
+    <string name="artists_none_filtered">Aucun artiste ne correspond.</string>
+    <string name="artist_guest">invité</string>
+    <string name="artist_albums">Albums</string>
+    <string name="artist_appears_on">Apparaît sur</string>
+    <string name="artist_tracks">Pistes</string>
+    <string name="explore_everything">Tout, au hasard</string>
+    <string name="explore_moods">Ambiances</string>
+    <string name="explore_collections">Collections</string>
+    <string name="explore_genres">Genres</string>
+    <string name="explore_decades">Décennies</string>
+    <string name="explore_mood_play">Écouter « %1$s » en continu</string>
+    <string name="explore_start_infinite">Lancer « %1$s » en mode infini</string>
+    <string name="explore_nothing">Aucun morceau ne correspond pour l’instant.</string>
+    <plurals name="album_count">
+        <item quantity="one">%1$d album</item>
+        <item quantity="many">%1$d albums</item>
+        <item quantity="other">%1$d albums</item>
+    </plurals>
+    <string name="player_infinite">Mode infini</string>
+    <string name="player_infinite_on">Activé</string>
+    <string name="player_infinite_off">Désactivé</string>
+
+    <!-- Réglages (F12), libellés du site -->
+    <string name="settings_title">Réglages</string>
+    <string name="settings_chaining">Enchaînement</string>
+    <string name="settings_infinite">Mode infini : quand la file se termine, la compléter toute seule</string>
+    <string name="settings_appearance">Apparence</string>
+    <string name="settings_theme">Thème</string>
+    <string name="settings_theme_auto">Comme le système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_device">Sur cet appareil</string>
+    <string name="settings_cache_size">Cache des morceaux</string>
+    <string name="settings_cache_help">%1$s utilisés. Les morceaux écoutés restent sur le téléphone pour repartir sans attendre ; les plus anciens laissent la place.</string>
+    <string name="settings_cache_clear">Vider le cache</string>
+    <string name="settings_account">Compte</string>
+    <string name="settings_account_cleartext">Connexion non chiffrée (http://) : déconseillée.</string>
+    <string name="settings_account_server">Serveur %1$s · appareil « %2$s »</string>
+    <string name="settings_about">À propos</string>
+    <string name="settings_version">Rengaine %1$s</string>
+    <string name="licences_title">Licences open source</string>
+    <string name="licences_intro">Rengaine est un logiciel libre sous licence MIT. Il est construit avec ces bibliothèques et cette police : touchez-en une pour lire sa licence.</string>
+    <string name="licences_read">lire la licence</string>
+    <string name="licences_website">Site</string>
+    <string name="settings_not_saved">Réglage non enregistré : vérifiez la connexion.</string>
+    <string name="size_mb">%1$d Mo</string>
+    <string name="size_gb">%1$d Go</string>
+
+    <!-- Recherche (F3), libellés du site -->
+    <string name="search_placeholder">Artiste, album, titre…</string>
+    <string name="search_clear">Effacer la recherche</string>
+    <string name="search_nothing">Aucun résultat.</string>
+    <string name="search_artists">Artistes</string>
+    <string name="search_albums">Albums</string>
+    <string name="search_tracks">Pistes</string>
+    <string name="search_all_results">Tous les résultats</string>
+    <string name="search_title">« %1$s »</string>
+
+    <!-- Favoris (F9) -->
+    <string name="favorite_not_saved">Favori non enregistré : vérifiez la connexion.</string>
+
+    <!-- Aléatoire (F4), libellés du site -->
+    <string name="random_new_selection">Générer une nouvelle sélection</string>
+    <string name="random_play_all">Tout écouter</string>
+    <string name="random_count">Pistes</string>
+    <string name="random_no_genre">Cochez au moins un genre.</string>
+    <string name="random_excluded_full">500 albums sont déjà de côté : c’est le maximum.</string>
+    <string name="random_all_genres">Tous les genres</string>
+    <string name="random_hide_selection">Masquer la sélection</string>
+    <string name="random_show_selection">Sélection</string>
+    <string name="random_check_all">Tout cocher</string>
+    <string name="random_uncheck_all">Tout décocher</string>
+    <string name="random_selection_help">Le choix s’applique à la prochaine sélection (« Générer une nouvelle sélection »).</string>
+    <string name="random_expand_genre">Afficher les albums de %1$s</string>
+    <string name="random_collapse_genre">Masquer les albums de %1$s</string>
+    <plurals name="random_albums_aside">
+        <item quantity="one">%d album de côté</item>
+        <item quantity="other">%d albums de côté</item>
+    </plurals>
+    <string name="random_empty">Aucune piste ne correspond à cette sélection.</string>
+    <string name="favorite_add">Ajouter aux favoris</string>
+    <string name="favorite_remove">Retirer des favoris</string>
+
+    <!-- Qualité du flux (F7), textes du site -->
+    <string name="settings_quality">Qualité du flux</string>
+    <string name="settings_quality_help">Le fichier d’origine (FLAC) est le meilleur, mais il pèse lourd. Une version allégée est convertie à la volée : utile sur téléphone ou avec une connexion lente.</string>
+    <string name="settings_quality_wifi">En wifi ou filaire</string>
+    <string name="settings_quality_mobile">Avec les données mobiles</string>
+    <string name="settings_quality_note">Le changement vaut à partir de la piste suivante.</string>
+    <string name="quality_original">Origine (sans perte quand il existe : environ 7 Mo par minute en FLAC)</string>
+    <string name="quality_high">Haute (256 kbit/s, environ 2 Mo par minute)</string>
+    <string name="quality_medium">Moyenne (160 kbit/s, environ 1,2 Mo par minute)</string>
+    <string name="quality_low">Économique (96 kbit/s, environ 0,7 Mo par minute)</string>
+
+    <!-- Historique d’écoute (2.26.0), textes du site -->
+    <string name="history_title">Historique d’écoute</string>
+    <string name="history_help">Une piste compte dès 5 secondes écoutées. Vous seul voyez votre historique ; la lecture continue s’en sert pour ne pas rejouer trop vite les mêmes pistes.</string>
+    <string name="history_clear">Tout effacer</string>
+    <string name="history_clear_confirm">Effacer tout votre historique d’écoute ? C’est définitif.</string>
+    <string name="history_cleared">Historique effacé.</string>
+    <string name="history_clear_failed">Historique non effacé : vérifiez la connexion.</string>
+    <string name="history_delete_failed">Écoute non effacée : vérifiez la connexion.</string>
+    <string name="history_delete_play">Effacer l’écoute de « %1$s »</string>
+    <string name="history_empty">Aucune écoute pour l’instant.</string>
+    <string name="history_today">Aujourd’hui</string>
+    <string name="history_yesterday">Hier</string>
+    <string name="history_skipped_at">passée à %1$s</string>
+    <string name="history_play">Écouter</string>
+    <string name="settings_history_link">Voir ou effacer mon historique d’écoute</string>
+    <plurals name="history_count">
+        <item quantity="one">%d écoute</item>
+        <item quantity="other">%d écoutes</item>
+    </plurals>
+
+    <!-- Compte et appareils (F13), textes du site -->
+    <string name="devices_title">Appareils connectés</string>
+    <string name="devices_revoke">Déconnecter</string>
+    <string name="devices_kind_web">navigateur</string>
+    <string name="devices_kind_app">appli</string>
+    <string name="devices_kind_agent">agent</string>
+    <string name="devices_this">cet appareil</string>
+    <string name="devices_seen">vu le %1$s</string>
+    <string name="devices_revoke_failed">Appareil non déconnecté : vérifiez la connexion.</string>
+    <string name="pair_help">Pour connecter l’appli Android : scannez un QR code depuis l’appli, ou tapez le code à la main.</string>
+    <string name="pair_button">Appairer un appareil</string>
+    <string name="pair_too_many">Trop de codes demandés : réessayez dans une heure.</string>
+    <string name="pair_failed">Impossible de créer un code pour l’instant, réessayez.</string>
+    <string name="pair_qr_label">QR code d’appairage</string>
+    <string name="pair_code">Code</string>
+    <string name="pair_server">Serveur</string>
+    <string name="pair_valid_for">Valable encore</string>
+    <string name="pair_expired">Ce code a expiré.</string>
+    <string name="pair_new_code">Nouveau code</string>
+    <string name="pair_done">« %1$s » est appairé.</string>
+    <string name="pair_close">Fermer</string>
+    <string name="data_title">Mes données</string>
+    <string name="data_help">Un fichier avec tout ce que Rengaine garde sur vous : profil, réglages, favoris, playlists, historique d’écoute, appareils.</string>
+    <string name="data_download">Télécharger mes données</string>
+    <string name="data_preparing">Préparation du fichier…</string>
+    <string name="data_done">Fichier téléchargé.</string>
+    <string name="data_too_many">Trop d’exports d’affilée : réessayez dans une heure.</string>
+    <string name="data_failed">Export impossible pour l’instant, réessayez.</string>
+    <string name="delete_title">Supprimer mon compte</string>
+    <string name="delete_help">Le compte et toutes ses données sont effacés aussitôt, sans retour possible.</string>
+    <string name="delete_button">Supprimer mon compte…</string>
+    <string name="delete_will_erase">Seront effacés tout de suite et définitivement :</string>
+    <string name="delete_item_music">vos playlists, vos favoris et votre historique d’écoute ;</string>
+    <string name="delete_item_settings">vos réglages et votre file d’attente ;</string>
+    <string name="delete_item_devices">vos appareils connectés et vos liens de télécommande.</string>
+    <string name="delete_password">Votre mot de passe, pour confirmer</string>
+    <string name="delete_confirm">Supprimer définitivement</string>
+    <string name="delete_keep">Garder mon compte</string>
+    <string name="delete_countdown_announce">Votre compte sera supprimé dans 15 secondes. Bouton Annuler pour le garder.</string>
+    <string name="delete_deleting">Suppression…</string>
+    <string name="delete_error_password">Mot de passe incorrect : le compte n’a pas été supprimé.</string>
+    <string name="delete_error_last_admin">Vous êtes le dernier administrateur : nommez d’abord un autre admin.</string>
+    <string name="delete_error_offline">Suppression impossible pour l’instant, réessayez.</string>
+    <string name="delete_done">Votre compte a été supprimé, avec toutes ses données.</string>
+    <plurals name="delete_countdown">
+        <item quantity="one">Suppression dans %d s.</item>
+        <item quantity="other">Suppression dans %d s.</item>
+    </plurals>
+
+    <!-- Réglages › Volume et lecture continue (textes du site, Settings.jsx) -->
+    <string name="settings_volume">Volume</string>
+    <string name="settings_normalization">Normalisation</string>
+    <string name="normalization_auto">Automatique (album écouté en entier : volume de l’album)</string>
+    <string name="normalization_track">Par piste</string>
+    <string name="normalization_album">Par album</string>
+    <string name="normalization_off">Désactivée</string>
+    <string name="settings_target_lufs">Volume visé : %1$d LUFS</string>
+    <string name="settings_target_lufs_help">-16 conseillé ; plus haut = plus fort, mais moins de nuances.</string>
+    <string name="settings_prevent_clipping">Éviter la saturation (le gain est réduit si besoin)</string>
+    <string name="settings_continuous">Choisir des pistes qui s’enchaînent bien (sinon : au hasard dans le genre de la piste en cours)</string>
+    <string name="settings_harmonic">Tonalités compatibles (mixage harmonique, roue Camelot)</string>
+    <string name="settings_bpm_tolerance">Écart de tempo avec la piste précédente</string>
+    <string name="bpm_tolerance_none">Pas de contrainte</string>
+    <string name="settings_energy">Énergie d’une piste à l’autre</string>
+    <string name="energy_any">Peu importe</string>
+    <string name="energy_steady">Stable</string>
+    <string name="energy_rising">Qui monte</string>
+    <string name="energy_falling">Qui redescend</string>
+    <string name="settings_favorites_weight">Favoris</string>
+    <string name="settings_no_repeat">Ne pas rejouer une piste écoutée depuis moins de</string>
+    <plurals name="no_repeat_hours">
+        <item quantity="one">%1$d heure</item>
+        <item quantity="many">%1$d heures</item>
+        <item quantity="other">%1$d heures</item>
+    </plurals>
+    <string name="bpm_tolerance_4">Très proche (4 %)</string>
+    <string name="bpm_tolerance_8">Proche (8 %)</string>
+    <string name="bpm_tolerance_15">Assez proche (15 %)</string>
+    <string name="favorites_weight_0">Comme le reste</string>
+    <string name="favorites_weight_03">Un peu plus souvent</string>
+    <string name="favorites_weight_06">Souvent</string>
+    <string name="favorites_weight_1">Seulement des favoris (s’il en reste)</string>
+    <string name="no_repeat_off">Pas de limite</string>
+    <string name="no_repeat_6h">6 heures</string>
+    <string name="no_repeat_24h">24 heures</string>
+    <string name="no_repeat_3d">3 jours</string>
+    <string name="no_repeat_1w">1 semaine</string>
+    <string name="no_repeat_30d">30 jours</string>
+    <string name="settings_artist_spacing">Entre deux pistes d’un même artiste, au moins</string>
+    <string name="artist_spacing_none">Pas de règle</string>
+    <plurals name="artist_spacing_tracks">
+        <item quantity="one">%1$d piste</item>
+        <item quantity="many">%1$d pistes</item>
+        <item quantity="other">%1$d pistes</item>
+    </plurals>
+    <string name="settings_excluded_genres">Genres à ne jamais proposer :</string>
+    <string name="excluded_genres_none">aucun</string>
+    <string name="settings_continuous_help">Quand plus rien ne respecte toutes les règles, elles sont assouplies une à une plutôt que d’arrêter la musique.</string>
+    <string name="player_volume">Volume</string>
+    <string name="player_volume_percent">%1$d %%</string>
+    <string name="player_mute">Couper le son</string>
+    <string name="player_unmute">Rétablir le son</string>
+</resources>

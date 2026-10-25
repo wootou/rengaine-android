@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D6 (décision du 2026-10-25) : un serveur en http:// est
+     accepté mais déconseillé ; l'app l'avertit à la connexion et dans
+     Réglages. Certificats : ceux du système seulement (pas d'autorité
+     ajoutée par l'utilisateur, pas d'auto-signé). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
