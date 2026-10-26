@@ -81,7 +81,10 @@ suspend fun <T : Any> apiCall(
         return ApiResult.Err(ApiError.Malformed(200, e))
     } catch (e: IllegalArgumentException) {
         // kotlinx.serialization lève aussi IllegalArgumentException
-        // (champ obligatoire absent, par exemple).
+        // (champ obligatoire absent, par exemple), et Retrofit quand il
+        // refuse la méthode avant tout envoi (type de réponse perdu en
+        // release) : on le note dans le journal.
+        android.util.Log.w("RengaineApi", "Appel refusé ou réponse illisible", e)
         return ApiResult.Err(ApiError.Malformed(200, e))
     }
     val etag = response.headers()["ETag"]

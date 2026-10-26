@@ -10,6 +10,12 @@
 # Continuation avec ses génériques.
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 -dontwarn okhttp3.**
+
+# Classes échangées avec le serveur : R8 retirait celles dont l'app ne lit
+# jamais le contenu (AcceptedResponse). Retrofit lit le type de la réponse
+# dans la signature de la méthode, n'y trouvait plus qu'Object et refusait
+# l'appel avant tout envoi (« Mot de passe oublié » muet en 1.0.0-rc.1).
+-keep,allowobfuscation class app.rengaine.data.remote.dto.** { *; }
 -dontwarn okio.**
 
 # ZXing : référence des classes de java.awt absentes d'Android, jamais

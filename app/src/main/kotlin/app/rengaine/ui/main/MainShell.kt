@@ -184,7 +184,7 @@ fun MainShell(onOpenAccounts: () -> Unit, onOpenPlayer: () -> Unit, onOpenQueue:
         bottomBar = {
             // Les touchers sur ce bloc s'arrêtent ici : sans cela, ceux qui
             // tombent entre deux boutons atteignent la liste dessous.
-            Column(Modifier.background(colors.bg).consumeTouches()) {
+            Column(Modifier.background(colors.bg).blockTouchesBelow()) {
                 MiniPlayer(
                     onOpenPlayer = onOpenPlayer,
                     onOpenQueue = onOpenQueue,
@@ -404,10 +404,15 @@ private fun TabsNavHost(nav: NavHostController, padding: PaddingValues, onOpenAc
     }
 }
 
-/** Absorbe les touchers que les enfants n'ont pas pris. */
-private fun Modifier.consumeTouches(): Modifier = pointerInput(Unit) {
+/**
+ * Arrête les touchers sur ce bloc : un bloc qui écoute le doigt cache à
+ * Compose ce qui est dessous. Il ne faut rien « consommer » : un bouton
+ * annule son appui si le parent consomme un mouvement, et certains écrans
+ * (Samsung) signalent un mouvement d'un pixel au milieu de chaque appui.
+ */
+internal fun Modifier.blockTouchesBelow(): Modifier = pointerInput(Unit) {
     awaitPointerEventScope {
-        while (true) awaitPointerEvent().changes.forEach { it.consume() }
+        while (true) awaitPointerEvent()
     }
 }
 

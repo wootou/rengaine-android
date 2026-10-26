@@ -3,7 +3,14 @@
 All notable changes to the app. Versions follow [Semantic Versioning](https://semver.org/);
 release candidates are published as GitHub pre-releases.
 
-## [1.0.0-rc.1] - unreleased
+## [1.0.0-rc.2] - unreleased
+
+### Fixed
+
+- Bottom bar buttons respond to the first tap on Samsung phones (they needed a quick double tap).
+- "Forgot password" sends the request again: in 1.0.0-rc.1 the release build failed before contacting the server.
+
+## [1.0.0-rc.1] - 2026-10-25
 
 First public release candidate. Built against the Rengaine server API contract 2.27.0.
 
