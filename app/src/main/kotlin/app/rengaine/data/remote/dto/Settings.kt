@@ -43,6 +43,15 @@ data class AccountSettings(val version: Long, val raw: JsonObject) {
     val targetLufs: Double get() = (at(PATH_TARGET_LUFS) as? JsonPrimitive)?.doubleOrNull?.coerceIn(-23.0, -8.0) ?: -16.0
     val preventClipping: Boolean get() = boolean(PATH_PREVENT_CLIPPING) ?: true
 
+    /** Fondu enchaîné, de 0 (aucun, par défaut) à 12 000 ms. */
+    val crossfadeMs: Long get() = (at(PATH_CROSSFADE) as? JsonPrimitive)?.longOrNull?.coerceIn(0, 12_000) ?: 0
+    /** Fondu aussi entre deux pistes consécutives d'un même album (non par défaut). */
+    val crossfadeWithinAlbum: Boolean get() = boolean(PATH_CROSSFADE_ALBUM) ?: false
+    /** Précharger la piste suivante (enchaînement sans attente), oui par défaut. */
+    val gapless: Boolean get() = boolean(PATH_GAPLESS) ?: true
+    /** Caler le fondu sur le tempo (LEC-06), oui par défaut. */
+    val beatSync: Boolean get() = boolean(PATH_BEAT_SYNC) ?: true
+
     /** Lecture continue (`continuous.enabled`, LEC-03) : inactive par défaut. */
     val continuousEnabled: Boolean get() = boolean(PATH_CONTINUOUS) ?: false
     val harmonicMixing: Boolean get() = boolean(PATH_HARMONIC) ?: false
@@ -77,6 +86,10 @@ data class AccountSettings(val version: Long, val raw: JsonObject) {
         val PATH_NORMALIZATION = listOf("playback", "normalization")
         val PATH_TARGET_LUFS = listOf("playback", "targetLufs")
         val PATH_PREVENT_CLIPPING = listOf("playback", "preventClipping")
+        val PATH_CROSSFADE = listOf("playback", "crossfadeMs")
+        val PATH_CROSSFADE_ALBUM = listOf("playback", "crossfadeWithinAlbum")
+        val PATH_GAPLESS = listOf("playback", "gapless")
+        val PATH_BEAT_SYNC = listOf("playback", "beatSync")
         val PATH_CONTINUOUS = listOf("continuous", "enabled")
         val PATH_HARMONIC = listOf("continuous", "harmonicMixing")
         val PATH_BPM_TOLERANCE = listOf("continuous", "bpmTolerancePercent")

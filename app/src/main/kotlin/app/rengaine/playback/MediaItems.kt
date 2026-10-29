@@ -4,6 +4,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.annotation.OptIn
 import android.net.Uri
 import android.os.Bundle
+import app.rengaine.domain.BeatGrid
+import app.rengaine.domain.TransitionTrack
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.rengaine.data.remote.dto.AudioFormatDto
@@ -38,6 +40,14 @@ object MediaItems {
     const val KEY_ALBUM_PEAK = "app.rengaine.albumPeak"
     /** Favori au moment du chargement ; `FavoritesRepository` garde les changements faits depuis. */
     const val KEY_FAVORITE = "app.rengaine.favorite"
+
+    // Fondu enchaîné (F8) : où commence et finit le son, grilles des temps.
+    const val KEY_AUDIO_START = "app.rengaine.audioStart"
+    const val KEY_AUDIO_END = "app.rengaine.audioEnd"
+    const val KEY_INTRO_BPM = "app.rengaine.introBpm"
+    const val KEY_INTRO_OFFSET = "app.rengaine.introOffset"
+    const val KEY_OUTRO_BPM = "app.rengaine.outroBpm"
+    const val KEY_OUTRO_OFFSET = "app.rengaine.outroOffset"
 
     /**
      * [track] doit porter des adresses **absolues** (`CatalogRepository`
@@ -77,6 +87,16 @@ object MediaItems {
                     track.playback?.track?.truePeakDbtp?.let { putDouble(KEY_TRACK_PEAK, it) }
                     track.playback?.album?.lufs?.let { putDouble(KEY_ALBUM_LUFS, it) }
                     track.playback?.album?.truePeakDbtp?.let { putDouble(KEY_ALBUM_PEAK, it) }
+                    track.playback?.audioStartMs?.let { putLong(KEY_AUDIO_START, it) }
+                    track.playback?.audioEndMs?.let { putLong(KEY_AUDIO_END, it) }
+                    track.playback?.beatGrid?.intro?.takeIf { it.bpm > 0 }?.let {
+                        putDouble(KEY_INTRO_BPM, it.bpm)
+                        putDouble(KEY_INTRO_OFFSET, it.offsetMs)
+                    }
+                    track.playback?.beatGrid?.outro?.takeIf { it.bpm > 0 }?.let {
+                        putDouble(KEY_OUTRO_BPM, it.bpm)
+                        putDouble(KEY_OUTRO_OFFSET, it.offsetMs)
+                    }
                 },
             )
             .build()
@@ -89,6 +109,26 @@ object MediaItems {
             .setCustomCacheKey(itemKey(track.id))
             .setMediaMetadata(metadata)
             .build()
+    }
+
+    /** Ce que le fondu enchaîné lit d'une piste de la file (F8). */
+    fun transitionTrack(item: MediaItem?): TransitionTrack? {
+        val id = trackIdOf(item?.mediaId) ?: return null
+        val meta = item!!.mediaMetadata
+        val x = meta.extras ?: Bundle.EMPTY
+        fun grid(bpm: String, offset: String) =
+            if (x.containsKey(bpm)) BeatGrid(x.getDouble(bpm), x.getDouble(offset)) else null
+        return TransitionTrack(
+            id = id,
+            albumId = x.getLong(KEY_ALBUM_ID).takeIf { it > 0 },
+            discNumber = meta.discNumber,
+            trackNumber = meta.trackNumber,
+            durationMs = meta.durationMs ?: 0,
+            audioStartMs = if (x.containsKey(KEY_AUDIO_START)) x.getLong(KEY_AUDIO_START) else null,
+            audioEndMs = if (x.containsKey(KEY_AUDIO_END)) x.getLong(KEY_AUDIO_END) else null,
+            intro = grid(KEY_INTRO_BPM, KEY_INTRO_OFFSET),
+            outro = grid(KEY_OUTRO_BPM, KEY_OUTRO_OFFSET),
+        )
     }
 
     /** Ce que la normalisation lit d'une piste de la file. */

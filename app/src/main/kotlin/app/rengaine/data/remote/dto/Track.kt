@@ -90,7 +90,16 @@ data class PlaybackInfoDto(
     /** Code Camelot (« 8A »), pour les enchaînements harmoniques. */
     val camelot: String? = null,
     val energy: Double? = null,
+    /** Grilles des temps du début et de la fin (LEC-06), pour caler le fondu sur le tempo. */
+    val beatGrid: BeatGridsDto? = null,
 )
+
+@Serializable
+data class BeatGridsDto(val intro: BeatGridDto? = null, val outro: BeatGridDto? = null)
+
+/** Un temps tombe à `offsetMs + n × 60000 / bpm`. */
+@Serializable
+data class BeatGridDto(val bpm: Double = 0.0, val offsetMs: Double = 0.0)
 
 @Serializable
 data class LoudnessDto(

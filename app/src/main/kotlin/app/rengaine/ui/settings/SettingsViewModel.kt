@@ -49,6 +49,13 @@ data class SettingsUiState(
     val normalization: String = "auto",
     val targetLufs: Int = -16,
     val preventClipping: Boolean = true,
+    /** Enchaînement (`playback`) : fondu enchaîné et préchargement. */
+    val crossfadeMs: Long = 0,
+    val crossfadeWithinAlbum: Boolean = false,
+    val beatSync: Boolean = true,
+    /** Case « Caler le fondu sur le tempo » : seulement si le serveur relève les grilles des temps. */
+    val showBeatSync: Boolean = false,
+    val gapless: Boolean = true,
     /** Lecture continue : bloc affiché seulement si le serveur la propose. */
     val showContinuous: Boolean = false,
     val continuous: ContinuousRules = ContinuousRules(),
@@ -77,6 +84,7 @@ class SettingsViewModel @Inject constructor(
     private val cache: StreamCache,
     private val player: PlayerController,
     private val catalog: CatalogRepository,
+    private val diagnostics: app.rengaine.playback.AudioDiagnostics,
     quality: StreamQualityPolicy,
     server: ServerFeatures,
 ) : ViewModel() {
@@ -103,6 +111,28 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { session.setVolumeBarHidden(!shown) }
     }
 
+    /** Son simplifié sur ce téléphone : aucun effet audio. */
+    val simplifiedAudio: StateFlow<Boolean> = session.simplifiedAudio
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setSimplifiedAudio(on: Boolean) {
+        viewModelScope.launch { session.setSimplifiedAudio(on) }
+    }
+
+    /** Journal de diagnostic du son : actif ou non, et nombre de lignes. */
+    val diagnosticsEnabled: StateFlow<Boolean> = session.audioDiagnostics
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    val diagnosticsLines: StateFlow<Int> = diagnostics.count
+
+    fun setDiagnostics(on: Boolean) {
+        viewModelScope.launch { session.setAudioDiagnostics(on) }
+    }
+
+    /** Tout le journal, pour le presse-papiers. */
+    fun diagnosticsText(): String = diagnostics.text()
+
+    fun clearDiagnostics() = diagnostics.clear()
+
     private val cacheUsed = MutableStateFlow<Long?>(null)
 
     val state: StateFlow<SettingsUiState> = combine(
@@ -125,6 +155,11 @@ class SettingsViewModel @Inject constructor(
             normalization = s?.normalization ?: "auto",
             targetLufs = s?.targetLufs?.let { Math.round(it).toInt() } ?: -16,
             preventClipping = s?.preventClipping ?: true,
+            crossfadeMs = s?.crossfadeMs ?: 0,
+            crossfadeWithinAlbum = s?.crossfadeWithinAlbum ?: false,
+            beatSync = s?.beatSync ?: true,
+            showBeatSync = features?.analysis?.beatGrid == true,
+            gapless = s?.gapless ?: true,
             showContinuous = features?.continuousPlay == true,
             continuous = ContinuousRules(
                 enabled = s?.continuousEnabled ?: false,
@@ -160,6 +195,10 @@ class SettingsViewModel @Inject constructor(
     fun setNormalization(mode: String) = save { settings.set(AccountSettings.PATH_NORMALIZATION, mode) }
     fun setTargetLufs(lufs: Int) = save { settings.set(AccountSettings.PATH_TARGET_LUFS, lufs) }
     fun setPreventClipping(on: Boolean) = save { settings.set(AccountSettings.PATH_PREVENT_CLIPPING, on) }
+    fun setCrossfadeMs(ms: Long) = save { settings.set(AccountSettings.PATH_CROSSFADE, ms.coerceIn(0, 12_000)) }
+    fun setCrossfadeWithinAlbum(on: Boolean) = save { settings.set(AccountSettings.PATH_CROSSFADE_ALBUM, on) }
+    fun setBeatSync(on: Boolean) = save { settings.set(AccountSettings.PATH_BEAT_SYNC, on) }
+    fun setGapless(on: Boolean) = save { settings.set(AccountSettings.PATH_GAPLESS, on) }
     fun setContinuous(on: Boolean) = save { settings.set(AccountSettings.PATH_CONTINUOUS, on) }
     fun setHarmonicMixing(on: Boolean) = save { settings.set(AccountSettings.PATH_HARMONIC, on) }
     fun setBpmTolerance(percent: Int?) = save { settings.set(AccountSettings.PATH_BPM_TOLERANCE, percent) }

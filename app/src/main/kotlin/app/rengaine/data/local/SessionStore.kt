@@ -70,6 +70,24 @@ class SessionStore @Inject constructor(
         store.edit { it[VOLUME_BAR_HIDDEN] = hidden }
     }
 
+    /**
+     * Son simplifié sur ce téléphone (`rengaine.sonSimple` du site) : aucun
+     * effet audio, donc pas d'amplification (le volume ne peut que baisser)
+     * ni de changement de vitesse pour caler le fondu sur le tempo.
+     */
+    val simplifiedAudio: Flow<Boolean> = store.data.map { it[SIMPLIFIED_AUDIO] ?: false }
+
+    suspend fun setSimplifiedAudio(on: Boolean) {
+        store.edit { it[SIMPLIFIED_AUDIO] = on }
+    }
+
+    /** Journal de diagnostic du son actif sur ce téléphone (`rengaine.diagSon` du site). */
+    val audioDiagnostics: Flow<Boolean> = store.data.map { it[AUDIO_DIAGNOSTICS] ?: false }
+
+    suspend fun setAudioDiagnostics(on: Boolean) {
+        store.edit { it[AUDIO_DIAGNOSTICS] = on }
+    }
+
     /** Albums affichés en liste plutôt qu'en grille de pochettes (propre à ce téléphone). */
     val albumsAsList: Flow<Boolean> = store.data.map { it[ALBUMS_AS_LIST] ?: false }
 
@@ -81,6 +99,8 @@ class SessionStore @Inject constructor(
         private val ALBUMS_AS_LIST = booleanPreferencesKey("albums_as_list")
         private val WAVEFORM_HIDDEN = booleanPreferencesKey("waveform_hidden")
         private val VOLUME_BAR_HIDDEN = booleanPreferencesKey("volume_bar_hidden")
+        private val SIMPLIFIED_AUDIO = booleanPreferencesKey("simplified_audio")
+        private val AUDIO_DIAGNOSTICS = booleanPreferencesKey("audio_diagnostics")
         const val DEFAULT_CACHE_SIZE_MB = 500
         private val CACHE_SIZE_MB = intPreferencesKey("cache_size_mb")
         private val ACTIVE_ACCOUNT = longPreferencesKey("active_account_id")

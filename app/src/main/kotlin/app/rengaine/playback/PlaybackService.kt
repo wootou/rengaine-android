@@ -39,6 +39,7 @@ import app.rengaine.data.remote.AuthorizedCallFactory
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import app.rengaine.data.repository.SettingsRepository
+import app.rengaine.domain.CrossfadeSettings
 import app.rengaine.domain.GainSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -71,17 +72,21 @@ class PlaybackService : MediaSessionService() {
     @Inject lateinit var qualityPolicy: StreamQualityPolicy
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var favorites: FavoritesRepository
+    @Inject lateinit var sessionStore: app.rengaine.data.local.SessionStore
+    @Inject lateinit var diag: AudioDiagnostics
 
     private lateinit var notificationFavorite: NotificationFavorite
 
-    /** Volume égalisé (F8), d'après les réglages `playback` du compte. */
-    private lateinit var normalizer: VolumeNormalizer
+    /** Les deux platines (F8) : l'active porte la file, l'autre sert au fondu enchaîné. */
+    private lateinit var decks: List<Crossfader.Deck>
+    private lateinit var crossfader: Crossfader
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     /** Écoutes (F11) : temps réellement joué, envoyé au serveur en fin de piste. */
     private lateinit var tracker: PlayTracker
 
-    private lateinit var player: ExoPlayer
+    /** Le lecteur qu'on entend et que voit la session. */
+    private val player: ExoPlayer get() = decks[crossfader.active].player
     private var mediaSession: MediaSession? = null
 
     /** Échecs de suite (pistes illisibles) : au-delà de [MAX_SKIPS], on s'arrête au lieu de tout parcourir. */
@@ -94,7 +99,7 @@ class PlaybackService : MediaSessionService() {
      */
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            if (::player.isInitialized && player.playbackState == Player.STATE_IDLE && player.playerError != null) {
+            if (::crossfader.isInitialized && player.playbackState == Player.STATE_IDLE && player.playerError != null) {
                 player.prepare()
             }
         }
@@ -146,33 +151,43 @@ class PlaybackService : MediaSessionService() {
             builder.build()
         }
 
-        player = ExoPlayer.Builder(this)
+        fun newPlayer(handleFocus: Boolean) = ExoPlayer.Builder(this)
             .setMediaSourceFactory(
                 ConversionEndFactory(DefaultMediaSourceFactory(this).setDataSourceFactory(streamFactory), qualityPolicy),
             )
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .build(),
-                /* handleAudioFocus = */ true,
-            )
+            // Seule la platine active gère le focus audio : la seconde, en
+            // le demandant, mettrait la première en pause.
+            .setAudioAttributes(audioAttributes, handleFocus)
             .setHandleAudioBecomingNoisy(true)
             // Le curseur de volume du lecteur (D12) suit le volume média
             // d'Android ; il le règle par `AudioManager` (`PlayerController`).
             .setDeviceVolumeControlEnabled(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
+            // Journal détaillé du lecteur, en debug seulement (diagnostic F7).
+            .also { if (app.rengaine.BuildConfig.DEBUG) it.addAnalyticsListener(androidx.media3.exoplayer.util.EventLogger("Rengaine/Lecteur")) }
+
+        decks = listOf(newPlayer(handleFocus = true), newPlayer(handleFocus = false)).map { exo ->
+            Crossfader.Deck(exo, VolumeNormalizer(exo), ConversionSeekPlayer(exo, qualityPolicy))
+        }
+        crossfader = Crossfader(decks, onSwap = ::swap, diag = diag)
+        decks.forEachIndexed { i, deck -> diag.watch(deck.player, i + 1) { crossfader.active == i } }
         player.addListener(playerListener)
-        normalizer = VolumeNormalizer(player)
         scope.launch {
             settingsRepository.settings
                 .map { s -> s?.let { GainSettings(it.normalization, it.targetLufs, it.preventClipping) } }
                 .distinctUntilChanged()
-                .collect(normalizer::onSettings)
+                .collect { gain -> decks.forEach { it.normalizer.onSettings(gain) } }
         }
-        // Journal détaillé du lecteur, en debug seulement (diagnostic F7).
-        if (app.rengaine.BuildConfig.DEBUG) player.addAnalyticsListener(androidx.media3.exoplayer.util.EventLogger("Rengaine/Lecteur"))
+        scope.launch {
+            settingsRepository.settings
+                .map { s -> s?.let { CrossfadeSettings(it.crossfadeMs, it.crossfadeWithinAlbum, it.beatSync) } ?: CrossfadeSettings() }
+                .distinctUntilChanged()
+                .collect { crossfader.settings = it }
+        }
+        scope.launch {
+            sessionStore.simplifiedAudio.collect { on -> decks.forEach { it.normalizer.simplified = on } }
+        }
         tracker = PlayTracker(
             elapsed = SystemClock::elapsedRealtime,
             now = Instant::now,
@@ -201,7 +216,7 @@ class PlaybackService : MediaSessionService() {
         notificationFavorite = NotificationFavorite(this, favorites)
 
         // La session voit le lecteur qui sait avancer dans une conversion (F7).
-        mediaSession = MediaSession.Builder(this, ConversionSeekPlayer(player, qualityPolicy))
+        mediaSession = MediaSession.Builder(this, decks[crossfader.active].session)
             .setBitmapLoader(bitmapLoader)
             .setSessionActivity(openApp)
             .setCallback(notificationFavorite)
@@ -236,12 +251,15 @@ class PlaybackService : MediaSessionService() {
         if (::tracker.isInitialized) tracker.finish(completed = false)
         scope.cancel()
         handler.removeCallbacks(saveListenLoop)
-        if (::normalizer.isInitialized) normalizer.release()
+        if (::crossfader.isInitialized) crossfader.release()
         runCatching { getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(networkCallback) }
         mediaSession?.run {
             player.removeListener(playerListener)
-            player.release()
             release()
+        }
+        if (::decks.isInitialized) decks.forEach {
+            it.normalizer.release()
+            it.player.release()
         }
         mediaSession = null
         super.onDestroy()
@@ -269,17 +287,8 @@ class PlaybackService : MediaSessionService() {
                 trackId != null && trackId == tracker.currentTrackId
             if (!restarted) tracker.finish(completed = automatic)
             if (player.isPlaying) tracker.playing(trackId)
-            forgetRestartPoints()
-            normalizer.onTrackStarted()
-            notificationFavorite.refresh()
-            // Les pistes passées pourront prendre la qualité du moment si on y revient.
-            val index = player.currentMediaItemIndex
-            val keep = listOf(index, index + 1).filter { it in 0 until player.mediaItemCount }
-                .mapNotNull { MediaItems.trackIdOf(player.getMediaItemAt(it).mediaId) }
-            qualityPolicy.keepOnly(keep.toSet())
+            onTrackChanged()
         }
-
-        override fun onAudioSessionIdChanged(audioSessionId: Int) = normalizer.onAudioSessionId(audioSessionId)
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             // Bout de la file atteint : la dernière piste est allée au bout.
@@ -305,6 +314,36 @@ class PlaybackService : MediaSessionService() {
                 else -> Unit
             }
         }
+    }
+
+    /** Nouvelle piste en cours, par enchaînement ou par fondu. */
+    private fun onTrackChanged(also: Long? = null) {
+        forgetRestartPoints()
+        notificationFavorite.refresh()
+        // Les pistes passées pourront prendre la qualité du moment si on y revient.
+        val index = player.currentMediaItemIndex
+        val keep = listOf(index, index + 1).filter { it in 0 until player.mediaItemCount }
+            .mapNotNull { MediaItems.trackIdOf(player.getMediaItemAt(it).mediaId) }
+        qualityPolicy.keepOnly((keep + listOfNotNull(also)).toSet())
+    }
+
+    /**
+     * Fondu enchaîné : la platine [to] prend la suite. La session, le
+     * focus audio et le suivi des écoutes passent sur elle ; la sortante
+     * finit son fondu seule. Pour l'historique, la piste sortante est allée
+     * au bout (passage automatique, comme sur le site).
+     */
+    private fun swap(from: Int, to: Int) {
+        val out = decks[from].player
+        val incoming = decks[to].player
+        out.removeListener(playerListener)
+        tracker.finish(completed = true)
+        out.setAudioAttributes(audioAttributes, /* handleAudioFocus = */ false)
+        incoming.setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
+        incoming.addListener(playerListener)
+        mediaSession?.player = decks[to].session
+        onTrackChanged(also = MediaItems.trackIdOf(out.currentMediaItem?.mediaId))
+        saveListen()
     }
 
     /**
@@ -363,6 +402,11 @@ class PlaybackService : MediaSessionService() {
             player.play()
         }
     }
+
+    private val audioAttributes = AudioAttributes.Builder()
+        .setUsage(C.USAGE_MEDIA)
+        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+        .build()
 
     private companion object {
         const val TAG = "Rengaine/Lecture"

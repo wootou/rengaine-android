@@ -229,6 +229,24 @@
     <!-- Réglages (F12), libellés du site -->
     <string name="settings_title">Réglages</string>
     <string name="settings_chaining">Enchaînement</string>
+    <string name="settings_crossfade">Fondu enchaîné : %1$s</string>
+    <string name="settings_crossfade_none">aucun</string>
+    <string name="settings_crossfade_seconds">%1$d s</string>
+    <string name="settings_crossfade_album">Fondu aussi entre deux pistes d’un même album (déconseillé pour les albums live)</string>
+    <string name="settings_beat_sync">Caler le fondu sur le tempo (quand les deux pistes ont un rythme régulier et des tempos proches)</string>
+    <string name="settings_gapless">Précharger la piste suivante (enchaînement sans attente)</string>
+    <string name="settings_simplified_audio">Son simplifié sur cet appareil (si le son saute ou se coupe par moments ; le volume ne peut alors que baisser)</string>
+    <string name="settings_diagnostics">Journal de diagnostic du son sur cet appareil (note les attentes du flux, les retards et les changements de page, pour comprendre des coupures)</string>
+    <string name="diagnostics_copy">Copier le journal</string>
+    <string name="diagnostics_clear">Effacer</string>
+    <string name="diagnostics_copied">Journal copié.</string>
+    <string name="diagnostics_copy_refused">Copie refusée par le téléphone.</string>
+    <string name="diagnostics_label">Journal de diagnostic du son</string>
+    <plurals name="diagnostics_lines">
+        <item quantity="one">%1$d ligne.</item>
+        <item quantity="many">%1$d lignes.</item>
+        <item quantity="other">%1$d lignes.</item>
+    </plurals>
     <string name="settings_infinite">Mode infini : quand la file se termine, la compléter toute seule</string>
     <string name="settings_appearance">Apparence</string>
     <string name="settings_theme">Thème</string>

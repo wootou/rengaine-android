@@ -39,8 +39,8 @@ android {
         // versionCode augmente de 1 à chaque APK distribué (RC comprises) :
         // Android refuse d'installer un APK dont le versionCode est plus
         // petit que celui déjà installé. Ne jamais le réutiliser.
-        versionCode = 3
-        versionName = "1.0.0-rc.2"
+        versionCode = 4
+        versionName = "1.0.0-rc.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

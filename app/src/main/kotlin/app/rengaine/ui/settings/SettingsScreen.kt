@@ -132,6 +132,7 @@ fun SettingsScreen(
 
         item(key = "chaining") {
             Section(stringResource(R.string.settings_chaining)) {
+                TransitionBlock(state, viewModel)
                 ToggleRow(
                     text = stringResource(R.string.settings_infinite),
                     checked = state.infiniteEnabled,

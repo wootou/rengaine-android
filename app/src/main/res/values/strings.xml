@@ -232,6 +232,23 @@
     <!-- Settings (F12) -->
     <string name="settings_title">Settings</string>
     <string name="settings_chaining">Transitions</string>
+    <string name="settings_crossfade">Crossfade: %1$s</string>
+    <string name="settings_crossfade_none">none</string>
+    <string name="settings_crossfade_seconds">%1$d s</string>
+    <string name="settings_crossfade_album">Also crossfade between two tracks of the same album (not advised for live albums)</string>
+    <string name="settings_beat_sync">Sync the crossfade to the beat (when both tracks have a steady rhythm and close tempos)</string>
+    <string name="settings_gapless">Preload the next track (gapless playback)</string>
+    <string name="settings_simplified_audio">Simplified audio on this device (if the sound skips or cuts out at times; volume can then only go down)</string>
+    <string name="settings_diagnostics">Audio diagnostic log on this device (records stream waits, delays and page changes, to understand dropouts)</string>
+    <string name="diagnostics_copy">Copy log</string>
+    <string name="diagnostics_clear">Clear</string>
+    <string name="diagnostics_copied">Log copied.</string>
+    <string name="diagnostics_copy_refused">The phone refused to copy.</string>
+    <string name="diagnostics_label">Audio diagnostic log</string>
+    <plurals name="diagnostics_lines">
+        <item quantity="one">%1$d line.</item>
+        <item quantity="other">%1$d lines.</item>
+    </plurals>
     <string name="settings_infinite">Endless mode: when the queue ends, keep it going on its own</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme">Theme</string>
