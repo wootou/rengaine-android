@@ -14,6 +14,7 @@ import app.rengaine.data.repository.AlbumSort
 import app.rengaine.data.repository.CatalogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.random.Random
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -75,7 +76,13 @@ class AlbumsViewModel @Inject constructor(
         loadFilters()
     }
 
-    fun setSort(sort: AlbumSort) = applyFilter(_state.value.filter.copy(sort = sort))
+    /**
+     * « Au hasard » : une graine de 0 à 999 999 tirée à chaque choix, comme
+     * le site, et gardée pour les pages suivantes (même ordre au défilement).
+     */
+    fun setSort(sort: AlbumSort) = applyFilter(
+        _state.value.filter.copy(sort = sort, seed = if (sort == AlbumSort.RANDOM) Random.nextLong(0, 1_000_000) else null),
+    )
     fun setGenre(genreId: Long?) = applyFilter(_state.value.filter.copy(genreId = genreId))
     fun setDecade(decade: Int?) = applyFilter(_state.value.filter.copy(decade = decade))
 

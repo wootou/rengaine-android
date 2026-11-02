@@ -104,6 +104,8 @@ class AddToPlaylistViewModel @Inject constructor(
 fun AddToPlaylistDialog(
     trackIds: List<Long>,
     onDismiss: () -> Unit,
+    /** Ce qu'on ajoute, sous le titre (« La file d’attente »), comme le site. */
+    subtitle: String? = null,
     viewModel: AddToPlaylistViewModel = hiltViewModel(key = "add-${trackIds.hashCode()}"),
 ) {
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
@@ -138,7 +140,19 @@ fun AddToPlaylistDialog(
         onDismissRequest = onDismiss,
         shape = RengaineShapes.dialog,
         containerColor = colors.surface,
-        title = { Text(stringResource(R.string.playlist_add_title), style = type.sectionTitle, color = colors.text) },
+        title = {
+            Column {
+                Text(stringResource(R.string.playlist_add_title), style = type.sectionTitle, color = colors.text)
+                subtitle?.let {
+                    val text = if (trackIds.size > 1) {
+                        "$it · ${pluralStringResource(R.plurals.track_count, trackIds.size, trackIds.size)}"
+                    } else {
+                        it
+                    }
+                    Text(text, style = type.secondary, color = colors.muted)
+                }
+            }
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(

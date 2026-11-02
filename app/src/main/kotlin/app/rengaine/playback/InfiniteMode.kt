@@ -16,7 +16,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -65,6 +67,30 @@ class InfiniteMode @Inject constructor(
 
     /** Filtre du dernier tirage d'Explorer ; `null` = d'après la piste en cours. */
     private var target: RandomFilter? = null
+        set(value) {
+            field = value
+            _source.value = when {
+                value == null -> Source.CURRENT_GENRE
+                value.genreIds.isNotEmpty() -> Source.CHOSEN_GENRES
+                value.hasTarget -> Source.TARGET
+                else -> Source.CURRENT_GENRE
+            }
+        }
+
+    /**
+     * D'où viennent les pistes ajoutées, pour la carte « Mode infini » de
+     * la file. Le site dit « Genre de la piste en cours » même pour un
+     * ciblage sans genre (ambiance, décennie, collection) : défaut signalé
+     * par l’équipe du site, à ne pas reproduire ; ici, [Source.TARGET].
+     */
+    enum class Source { CURRENT_GENRE, CHOSEN_GENRES, TARGET }
+
+    private val _source = MutableStateFlow(Source.CURRENT_GENRE)
+    val source: StateFlow<Source> = _source.asStateFlow()
+
+    private val _searching = MutableStateFlow(false)
+    /** Vrai pendant la recherche de pistes (« Le mode infini cherche des pistes… »). */
+    val searching: StateFlow<Boolean> = _searching.asStateFlow()
 
     init {
         scope.launch { player.replaced.collect { target = null } }
@@ -95,14 +121,19 @@ class InfiniteMode @Inject constructor(
         if (s.count - s.index - 1 >= THRESHOLD) return
         val filter = target ?: RandomFilter()
         extending = scope.launch {
-            val recent = player.queue.value.mapNotNull { it.trackId }.takeLast(RECENT)
-            val tracks = continuous(filter, recent).ifEmpty { draw(filter, recent) }
-            val items = tracks.mapNotNull(MediaItems::fromTrack)
-            // Réglage coupé ou autre écoute choisie pendant le tirage : on ne mélange pas les files.
-            if (!enabled.value || (target ?: RandomFilter()) != filter || items.isEmpty()) return@launch
-            player.addToQueue(items)
-            Log.i(TAG, "File prolongée de ${items.size} pistes")
+            _searching.value = true
+            try { extend(filter) } finally { _searching.value = false }
         }
+    }
+
+    private suspend fun extend(filter: RandomFilter) {
+        val recent = player.queue.value.mapNotNull { it.trackId }.takeLast(RECENT)
+        val tracks = continuous(filter, recent).ifEmpty { draw(filter, recent) }
+        val items = tracks.mapNotNull(MediaItems::fromTrack)
+        // Réglage coupé ou autre écoute choisie pendant le tirage : on ne mélange pas les files.
+        if (!enabled.value || (target ?: RandomFilter()) != filter || items.isEmpty()) return
+        player.addToQueue(items)
+        Log.i(TAG, "File prolongée de ${items.size} pistes")
     }
 
     /**

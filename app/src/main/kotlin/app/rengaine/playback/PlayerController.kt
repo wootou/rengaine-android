@@ -196,6 +196,41 @@ class PlayerController @Inject constructor(
         }
     }
 
+    /** Piste de l'élément [index] de la file (garde des commandes d'invité). */
+    fun trackIdAt(index: Int): Long? = controller?.takeIf { index in 0 until it.mediaItemCount }
+        ?.let { MediaItems.trackIdOf(it.getMediaItemAt(index).mediaId) }
+
+    /** Titre de l'élément [index] de la file. */
+    fun titleAt(index: Int): String? = controller?.takeIf { index in 0 until it.mediaItemCount }
+        ?.getMediaItemAt(index)?.mediaMetadata?.title?.toString()
+
+    /** Lecture (télécommande) : relance aussi après une erreur. */
+    fun play() {
+        controller?.run {
+            if (playbackState == Player.STATE_IDLE) prepare()
+            play()
+        }
+    }
+
+    fun pause() {
+        controller?.pause()
+    }
+
+    /** Volume média en pourcentage, 0 si coupé (état envoyé aux invités). */
+    fun volumePercent(): Int? {
+        val a = audio ?: return null
+        if (a.isStreamMute(AudioManager.STREAM_MUSIC)) return 0
+        val max = a.getStreamMaxVolume(AudioManager.STREAM_MUSIC).takeIf { it > 0 } ?: return null
+        return (a.getStreamVolume(AudioManager.STREAM_MUSIC) * 100 + max / 2) / max
+    }
+
+    /** Volume réglé en pourcentage par un invité ; remet le son s'il était coupé. */
+    fun setVolumePercent(percent: Int) {
+        val a = audio ?: return
+        val max = a.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        setVolume((percent.coerceIn(0, 100) * max + 50) / 100)
+    }
+
     fun skipNext() {
         controller?.seekToNextMediaItem()
     }

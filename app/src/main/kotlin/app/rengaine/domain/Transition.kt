@@ -11,7 +11,7 @@ import kotlin.math.roundToLong
  * Fondu enchaîné (F8), repris à l'identique de `engine/playback.js` du site
  * (fonctions `consecutiveInAlbum`, `transition`, `tempoMatch`,
  * `beatTransition`, `beatPhase`, `phaseError`, `syncedRate`, `glideRate`,
- * transmises par dev-musique le 2026-10-29). Fonctions pures : le moteur
+ * transmises par l’équipe du site le 2026-10-29). Fonctions pures : le moteur
  * ([app.rengaine.playback.Crossfader]) les applique.
  */
 

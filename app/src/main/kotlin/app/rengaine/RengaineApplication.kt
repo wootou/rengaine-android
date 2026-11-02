@@ -22,12 +22,16 @@ class RengaineApplication : Application(), SingletonImageLoader.Factory {
     // Créé dès le démarrage pour suivre le lecteur, même sans écran ouvert.
     @Inject lateinit var infiniteMode: InfiniteMode
 
+    // Télécommande partagée (FUT-02) : écoute des commandes d'invités.
+    @Inject lateinit var remoteControl: app.rengaine.playback.RemoteControl
+
     override fun onCreate() {
         super.onCreate()
         // File d'attente du compte actif : reprise au démarrage, puis envois (F6).
         queueSync.start()
         // Écoutes restées sur le téléphone (hors ligne, app fermée) : envoyées (F11).
         history.start()
+        remoteControl.start()
     }
 
     /**

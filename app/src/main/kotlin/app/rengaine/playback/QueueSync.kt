@@ -86,6 +86,21 @@ class QueueSync @Inject constructor(
         scope.launch { accounts.accounts.collect { list -> store.keepOnly(list.map { it.id }.toSet()) } }
     }
 
+    /** La file du serveur a été reprise : on peut l'annoncer et l'enregistrer. */
+    val isReady: Boolean get() = ready
+
+    /**
+     * Enregistre la file tout de suite (commande d'un invité : il doit voir
+     * le résultat sans attendre le délai habituel).
+     */
+    suspend fun saveNow() {
+        pendingSave?.cancel()
+        save()
+    }
+
+    /** Version de la file enregistrée que l'on connaît (`PUT /me/player`), 0 si aucune. */
+    fun knownVersion(): Long = etag?.trim('"')?.removePrefix("W/")?.trim('"')?.toLongOrNull() ?: 0
+
     private suspend fun switchTo(id: Long?) {
         pendingSave?.cancel()
         mutex.withLock {

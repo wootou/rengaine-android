@@ -15,14 +15,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RemoveCircleOutline
@@ -43,6 +46,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -98,6 +103,12 @@ class PlaylistViewModel @Inject constructor(
     val playerState = player.state
     private val _deleted = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val deleted = _deleted.asSharedFlow()
+    private val _messages = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+    /** Message à afficher (ressource texte) : « Enregistré », échecs. */
+    val messages = _messages.asSharedFlow()
+    private val _copied = MutableSharedFlow<Long>(extraBufferCapacity = 1)
+    /** Identifiant de la copie, que la page ouvre aussitôt (comme le site). */
+    val copied = _copied.asSharedFlow()
 
     init {
         load()
@@ -118,7 +129,45 @@ class PlaylistViewModel @Inject constructor(
     fun playNext(tracks: List<TrackDto> = playable().map { it.track }) = player.playNext(tracks.mapNotNull(MediaItems::fromTrack))
     fun addToQueue(tracks: List<TrackDto> = playable().map { it.track }) = player.addToQueue(tracks.mapNotNull(MediaItems::fromTrack))
 
-    fun rename(name: String) = viewModelScope.launch { update(repository.rename(id, name)) }
+    /** « Modifier la playlist » : nom et description. Vrai si c'est enregistré. */
+    fun edit(name: String, description: String) = viewModelScope.launch {
+        val r = repository.edit(id, name, description)
+        update(r)
+        _messages.emit(if (r is ApiResult.Ok) R.string.playlist_saved else R.string.playlist_save_failed)
+    }
+
+    /** « Copier dans mes playlists » ; [name] est « {nom} (copie) ». */
+    fun copy(name: String) = viewModelScope.launch {
+        val source = (_state.value as? PlaylistUiState.Ready)?.playlist ?: return@launch
+        when (val r = repository.copy(source, name)) {
+            is ApiResult.Ok -> _copied.emit(r.value.id)
+            is ApiResult.Err -> _messages.emit(R.string.playlist_copy_failed)
+        }
+    }
+
+    /**
+     * Monter ([by] = -1) ou descendre (+1) une entrée. Affichée tout de
+     * suite ; le serveur reçoit l'ordre complet (`PUT …/items`), et on
+     * recharge en cas d'échec.
+     */
+    fun move(entry: PlaylistEntryDto, by: Int) {
+        val playlist = (_state.value as? PlaylistUiState.Ready)?.playlist ?: return
+        val items = playlist.items.toMutableList()
+        val from = items.indexOfFirst { it.id == entry.id }
+        val to = from + by
+        if (from < 0 || to !in items.indices) return
+        items.add(to, items.removeAt(from))
+        _state.value = PlaylistUiState.Ready(playlist.copy(items = items))
+        viewModelScope.launch {
+            val r = repository.reorder(id, items.map { it.id })
+            if (r is ApiResult.Err) {
+                _messages.emit(R.string.playlist_save_failed)
+                update(repository.playlist(id))
+            } else {
+                update(r)
+            }
+        }
+    }
     fun setShared(shared: Boolean) = viewModelScope.launch { update(repository.setShared(id, shared)) }
     fun remove(entry: PlaylistEntryDto) = viewModelScope.launch { update(repository.removeEntry(id, entry.id)) }
     fun delete() = viewModelScope.launch {
@@ -152,15 +201,22 @@ class PlaylistViewModel @Inject constructor(
 fun PlaylistScreen(
     onBack: () -> Unit,
     contentPadding: PaddingValues,
+    onOpenAlbum: (Long) -> Unit = {},
+    onOpenPlaylist: (Long) -> Unit = {},
     viewModel: PlaylistViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val player by viewModel.playerState.collectAsStateWithLifecycle()
-    var renaming by rememberSaveable { mutableStateOf(false) }
+    var editing by rememberSaveable { mutableStateOf(false) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var addTracks by remember { mutableStateOf<List<Long>?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.deleted.collect { onBack() } }
+    LaunchedEffect(Unit) { viewModel.copied.collect(onOpenPlaylist) }
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
+    }
 
     when (val s = state) {
         PlaylistUiState.Loading -> Box(Modifier.fillMaxSize().padding(contentPadding)) { LoadingState() }
@@ -171,6 +227,10 @@ fun PlaylistScreen(
             val addQueueLabel = stringResource(R.string.action_add_to_queue)
             val addPlaylistLabel = stringResource(R.string.action_add_to_playlist)
             val removeLabel = stringResource(R.string.playlist_remove_track)
+            val moveUpLabel = stringResource(R.string.queue_move_up)
+            val moveDownLabel = stringResource(R.string.queue_move_down)
+            val albumLabel = stringResource(R.string.track_open_album)
+            val copyName = stringResource(R.string.playlist_copy_name, playlist.name)
             LazyColumn(
                 contentPadding = PaddingValues(
                     top = contentPadding.calculateTopPadding(),
@@ -182,8 +242,8 @@ fun PlaylistScreen(
                     Header(
                         playlist = playlist,
                         onBack = onBack,
-                        onRename = { renaming = true },
-                        onDelete = { confirmDelete = true },
+                        onEdit = { editing = true },
+                        onCopy = { viewModel.copy(copyName) },
                         viewModel = viewModel,
                     )
                 }
@@ -197,7 +257,7 @@ fun PlaylistScreen(
                         )
                     }
                 }
-                items(playlist.items, key = { it.id }) { entry ->
+                itemsIndexed(playlist.items, key = { _, it -> it.id }) { index, entry ->
                     val track = entry.track
                     TrackRow(
                         track = track,
@@ -210,18 +270,32 @@ fun PlaylistScreen(
                             add(TrackAction(playNextLabel, Icons.AutoMirrored.Filled.PlaylistPlay) { viewModel.playNext(listOf(track)) })
                             add(TrackAction(addQueueLabel, Icons.AutoMirrored.Filled.PlaylistAdd) { viewModel.addToQueue(listOf(track)) })
                             add(TrackAction(addPlaylistLabel, Icons.Filled.Add) { addTracks = listOf(track.id) })
-                            if (playlist.mine) add(TrackAction(removeLabel, Icons.Filled.RemoveCircleOutline) { viewModel.remove(entry) })
+                            track.album?.let { album -> add(TrackAction(albumLabel, Icons.Filled.Album) { onOpenAlbum(album.id) }) }
+                            if (playlist.mine) {
+                                if (index > 0) add(TrackAction(moveUpLabel, Icons.Filled.KeyboardArrowUp) { viewModel.move(entry, -1) })
+                                if (index < playlist.items.lastIndex) {
+                                    add(TrackAction(moveDownLabel, Icons.Filled.KeyboardArrowDown) { viewModel.move(entry, 1) })
+                                }
+                                add(TrackAction(removeLabel, Icons.Filled.RemoveCircleOutline) { viewModel.remove(entry) })
+                            }
                         },
                     )
                 }
             }
 
-            if (renaming) {
-                PlaylistNameDialog(
-                    title = stringResource(R.string.playlist_rename),
-                    initial = playlist.name,
-                    onConfirm = viewModel::rename,
-                    onDismiss = { renaming = false },
+            if (editing) {
+                PlaylistEditDialog(
+                    initialName = playlist.name,
+                    initialDescription = playlist.description.orEmpty(),
+                    onSave = { name, description ->
+                        editing = false
+                        viewModel.edit(name, description)
+                    },
+                    onDelete = {
+                        editing = false
+                        confirmDelete = true
+                    },
+                    onDismiss = { editing = false },
                 )
             }
             if (confirmDelete) {
@@ -236,8 +310,8 @@ fun PlaylistScreen(
 private fun Header(
     playlist: PlaylistDetailDto,
     onBack: () -> Unit,
-    onRename: () -> Unit,
-    onDelete: () -> Unit,
+    onEdit: () -> Unit,
+    onCopy: () -> Unit,
     viewModel: PlaylistViewModel,
 ) {
     val colors = Rengaine.colors
@@ -268,6 +342,15 @@ private fun Header(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp).semantics { heading() },
         )
+        playlist.description?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                it,
+                style = type.body,
+                color = colors.muted,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 6.dp),
+            )
+        }
         Text(meta, style = type.secondary, color = colors.muted)
 
         Row(
@@ -280,12 +363,14 @@ private fun Header(
             IconButton(onClick = { viewModel.addToQueue() }) {
                 Icon(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.action_add_to_queue), tint = colors.text)
             }
+            // Comme le site : le crayon sur mes playlists, « Copier » à sa place sur celle d'un autre compte.
             if (playlist.mine) {
-                IconButton(onClick = onRename) {
-                    Icon(Icons.Filled.Edit, stringResource(R.string.playlist_rename), tint = colors.text)
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Filled.Edit, stringResource(R.string.playlist_edit), tint = colors.text)
                 }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, stringResource(R.string.playlist_delete), tint = colors.text)
+            } else {
+                IconButton(onClick = onCopy) {
+                    Icon(Icons.Filled.ContentCopy, stringResource(R.string.playlist_copy), tint = colors.text)
                 }
             }
             Spacer(Modifier.weight(1f))

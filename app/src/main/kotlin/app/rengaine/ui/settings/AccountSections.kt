@@ -188,7 +188,7 @@ private fun LabeledValue(label: String, value: String) {
 }
 
 /** QR en noir sur blanc, un pixel par module (agrandi sans lissage à l'affichage). */
-private fun qrBitmap(payload: String): ImageBitmap {
+internal fun qrBitmap(payload: String): ImageBitmap {
     val matrix = QRCodeWriter().encode(payload, BarcodeFormat.QR_CODE, 0, 0, mapOf(EncodeHintType.MARGIN to 1))
     val bitmap = android.graphics.Bitmap.createBitmap(matrix.width, matrix.height, android.graphics.Bitmap.Config.ARGB_8888)
     for (x in 0 until matrix.width) for (y in 0 until matrix.height) {

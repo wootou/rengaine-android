@@ -8,6 +8,7 @@ import app.rengaine.data.remote.dto.AlbumDetailDto
 import app.rengaine.data.remote.dto.AlbumPageDto
 import app.rengaine.data.remote.dto.ArtistDetailDto
 import app.rengaine.data.remote.dto.ArtistPageDto
+import app.rengaine.data.remote.dto.CollectionDetailDto
 import app.rengaine.data.remote.dto.CollectionDto
 import app.rengaine.data.remote.dto.DecadeDto
 import app.rengaine.data.remote.dto.GenreDto
@@ -21,7 +22,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /** Tri des albums (`sort` du contrat). */
-enum class AlbumSort(val api: String) { NAME("name"), ADDED("added"), YEAR("year"), ARTIST("artist") }
+enum class AlbumSort(val api: String) { NAME("name"), ADDED("added"), YEAR("year"), ARTIST("artist"), RANDOM("random") }
 
 /** Filtres de la liste d'albums ; `null` = pas de filtre. */
 data class AlbumFilter(
@@ -30,6 +31,8 @@ data class AlbumFilter(
     /** Décennie : 1980 pour 1980-1989. */
     val decade: Int? = null,
     val collectionId: Long? = null,
+    /** Graine du tri « Au hasard » : la même d'une page à l'autre garde le même ordre (contrat). */
+    val seed: Long? = null,
 )
 
 /**
@@ -67,6 +70,7 @@ class CatalogRepository @Inject constructor(
                     yearFrom = filter.decade,
                     yearTo = filter.decade?.plus(9),
                     collection = filter.collectionId,
+                    seed = filter.seed.takeIf { filter.sort == AlbumSort.RANDOM },
                     limit = limit,
                     offset = offset,
                 )
@@ -181,6 +185,16 @@ class CatalogRepository @Inject constructor(
     suspend fun collections(): ApiResult<List<CollectionDto>> = withSession { s ->
         apiCall { s.api.listCollections() }.map { list ->
             list.items.map { c -> c.copy(coverUrls = c.coverUrls.map(s.account.address::resolve)) }
+        }
+    }
+
+    suspend fun collection(id: Long): ApiResult<CollectionDetailDto> = withSession { s ->
+        val address = s.account.address
+        apiCall { s.api.getCollection(id) }.map { c ->
+            c.copy(
+                coverUrls = c.coverUrls.map(address::resolve),
+                albums = c.albums.map { it.copy(coverUrl = it.coverUrl?.let(address::resolve)) },
+            )
         }
     }
 

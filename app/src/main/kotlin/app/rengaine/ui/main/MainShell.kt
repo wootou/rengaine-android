@@ -67,6 +67,7 @@ import app.rengaine.R
 import app.rengaine.ui.components.LogoMark
 import app.rengaine.ui.library.AlbumScreen
 import app.rengaine.ui.library.AlbumsScreen
+import app.rengaine.ui.library.CollectionScreen
 import app.rengaine.ui.library.ArtistScreen
 import app.rengaine.ui.library.ArtistsScreen
 import app.rengaine.ui.library.ExploreScreen
@@ -113,13 +114,16 @@ data object HistoryRoute
 
 /** Réglages (F12), ouverts par la roue de l'en-tête. */
 @Serializable
-data object SettingsRoute
+data class SettingsRoute(val anchor: String = "")
 
 /** Licences open source, depuis Réglages › À propos. */
 @Serializable
 data object LicencesRoute
 
 /** Albums d'un genre, d'une décennie ou d'une collection (depuis Explorer) ; -1 = sans. */
+@Serializable
+data class CollectionRoute(val id: Long)
+
 @Serializable
 data class AlbumListRoute(val title: String, val genreId: Long = -1, val decade: Int = -1, val collectionId: Long = -1)
 
@@ -142,7 +146,14 @@ private enum class Tab(val route: Any, val routeClass: KClass<*>, val label: Int
  * le champ. La roue ouvre Réglages, d'où l'on gère les comptes.
  */
 @Composable
-fun MainShell(onOpenAccounts: () -> Unit, onOpenPlayer: () -> Unit, onOpenQueue: () -> Unit) {
+fun MainShell(
+    onOpenAccounts: () -> Unit,
+    onOpenPlayer: () -> Unit,
+    onOpenQueue: () -> Unit,
+    /** Demande d'ouvrir Réglages sur une section (bouton « Partager la file »), puis consommée. */
+    settingsAnchor: String? = null,
+    onSettingsAnchorShown: () -> Unit = {},
+) {
     val nav = rememberNavController()
     val colors = Rengaine.colors
     val search: SearchBoxViewModel = hiltViewModel()
@@ -163,6 +174,12 @@ fun MainShell(onOpenAccounts: () -> Unit, onOpenPlayer: () -> Unit, onOpenQueue:
         closeSearch()
         nav.navigate(SearchRoute(q))
     }
+    LaunchedEffect(settingsAnchor) {
+        settingsAnchor ?: return@LaunchedEffect
+        nav.navigate(SettingsRoute(settingsAnchor)) { launchSingleTop = true }
+        onSettingsAnchorShown()
+    }
+
     // Retour avec la liste ouverte : on la ferme, le texte reste.
     BackHandler(enabled = searchFocused) { focusManager.clearFocus() }
 
@@ -177,7 +194,7 @@ fun MainShell(onOpenAccounts: () -> Unit, onOpenPlayer: () -> Unit, onOpenQueue:
                 onFocusChange = { searchFocused = it },
                 onOpenSettings = {
                     focusManager.clearFocus()
-                    nav.navigate(SettingsRoute) { launchSingleTop = true }
+                    nav.navigate(SettingsRoute()) { launchSingleTop = true }
                 },
             )
         },
@@ -345,7 +362,12 @@ private fun TabsNavHost(nav: NavHostController, padding: PaddingValues, onOpenAc
             ExploreScreen(
                 contentPadding = padding,
                 onBrowse = { title, genre, decade, collection ->
-                    nav.navigate(AlbumListRoute(title, genre ?: -1, decade ?: -1, collection ?: -1))
+                    // Une collection a sa propre page (ordre de l'admin, « Au hasard »), comme sur le site.
+                    if (collection != null) {
+                        nav.navigate(CollectionRoute(collection))
+                    } else {
+                        nav.navigate(AlbumListRoute(title, genre ?: -1, decade ?: -1))
+                    }
                 },
             )
         }
@@ -358,7 +380,10 @@ private fun TabsNavHost(nav: NavHostController, padding: PaddingValues, onOpenAc
                 onBack = { nav.popBackStack() },
             )
         }
-        composable<RandomTab> { RandomScreen(padding) }
+        composable<CollectionRoute> {
+            CollectionScreen(onBack = { nav.popBackStack() }, onOpenAlbum = { nav.navigate(AlbumRoute(it)) }, contentPadding = padding)
+        }
+        composable<RandomTab> { RandomScreen(padding, onOpenAlbum = { nav.navigate(AlbumRoute(it)) }) }
         composable<PlaylistsTab> {
             PlaylistsScreen(
                 contentPadding = padding,
@@ -367,7 +392,12 @@ private fun TabsNavHost(nav: NavHostController, padding: PaddingValues, onOpenAc
             )
         }
         composable<PlaylistRoute> {
-            PlaylistScreen(onBack = { nav.popBackStack() }, contentPadding = padding)
+            PlaylistScreen(
+                onBack = { nav.popBackStack() },
+                contentPadding = padding,
+                onOpenAlbum = { nav.navigate(AlbumRoute(it)) },
+                onOpenPlaylist = { nav.navigate(PlaylistRoute(it)) },
+            )
         }
         composable<SearchRoute> {
             SearchScreen(
@@ -377,8 +407,9 @@ private fun TabsNavHost(nav: NavHostController, padding: PaddingValues, onOpenAc
                 contentPadding = padding,
             )
         }
-        composable<SettingsRoute> {
+        composable<SettingsRoute> { entry ->
             SettingsScreen(
+                anchor = entry.toRoute<SettingsRoute>().anchor,
                 onBack = { nav.popBackStack() },
                 onOpenAccounts = onOpenAccounts,
                 onOpenHistory = { nav.navigate(HistoryRoute) { launchSingleTop = true } },

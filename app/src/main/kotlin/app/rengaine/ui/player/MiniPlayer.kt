@@ -65,13 +65,24 @@ class PlayerViewModel @Inject constructor(
     private val controller: PlayerController,
     private val infinite: InfiniteMode,
     session: SessionStore,
+    remote: app.rengaine.playback.RemoteControl,
+    server: app.rengaine.data.repository.ServerFeatures,
 ) : ViewModel() {
     val state: StateFlow<PlayerUiState> = controller.state
+
+    /** Télécommande partagée : bouton de la file seulement si le serveur l'a (FUT-02). */
+    val remoteAvailable: StateFlow<Boolean> = server.features.map { it?.remoteControl == true }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    /** Lien valable (bouton allumé) et dernier geste d'un invité. */
+    val remote: StateFlow<app.rengaine.playback.RemoteControl.Status> = remote.status
     /** Curseur de volume affiché (Réglages › Sur cet appareil). */
     val volumeBarShown: StateFlow<Boolean> = session.volumeBarHidden.map { !it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
     /** Réglage « mode infini » du compte (bouton ∞ du lecteur). */
     val infiniteActive: StateFlow<Boolean> = infinite.enabled
+    val infiniteSource: StateFlow<InfiniteMode.Source> = infinite.source
+    val infiniteSearching: StateFlow<Boolean> = infinite.searching
     private val _notSaved = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     /** Le réglage n'a pas pu être enregistré (hors ligne) : on le dit. */
     val notSaved = _notSaved.asSharedFlow()

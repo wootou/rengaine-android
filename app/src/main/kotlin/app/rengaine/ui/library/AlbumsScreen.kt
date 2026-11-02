@@ -164,6 +164,7 @@ private fun Filters(state: AlbumsUiState, viewModel: AlbumsViewModel) {
         SelectOption(AlbumSort.ADDED, stringResource(R.string.albums_sort_added)),
         SelectOption(AlbumSort.YEAR, stringResource(R.string.albums_sort_year)),
         SelectOption(AlbumSort.ARTIST, stringResource(R.string.albums_sort_artist)),
+        SelectOption(AlbumSort.RANDOM, stringResource(R.string.albums_sort_random)),
     )
     val genreOptions = listOf(SelectOption<Long?>(null, stringResource(R.string.albums_all_genres))) +
         state.genres.map { SelectOption<Long?>(it.id, it.name) }

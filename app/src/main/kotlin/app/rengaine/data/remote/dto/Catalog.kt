@@ -137,6 +137,17 @@ data class CollectionDto(
     val coverUrls: List<String> = emptyList(),
 )
 
+/** `GET /collections/{id}` : la collection et ses albums, dans l'ordre choisi par l'admin. */
+@Serializable
+data class CollectionDetailDto(
+    val id: Long,
+    val name: String = "",
+    val description: String? = null,
+    val albumCount: Int = 0,
+    val coverUrls: List<String> = emptyList(),
+    val albums: List<AlbumSummaryDto> = emptyList(),
+)
+
 @Serializable
 data class CollectionListDto(val items: List<CollectionDto> = emptyList())
 

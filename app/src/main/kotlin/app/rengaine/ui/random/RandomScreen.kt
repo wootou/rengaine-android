@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
@@ -80,7 +81,11 @@ import app.rengaine.ui.theme.Rengaine
  * en-têtes de disque.
  */
 @Composable
-fun RandomScreen(contentPadding: PaddingValues, viewModel: RandomViewModel = hiltViewModel()) {
+fun RandomScreen(
+    contentPadding: PaddingValues,
+    onOpenAlbum: (Long) -> Unit = {},
+    viewModel: RandomViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val player by viewModel.playerState.collectAsStateWithLifecycle()
     val colors = Rengaine.colors
@@ -88,6 +93,7 @@ fun RandomScreen(contentPadding: PaddingValues, viewModel: RandomViewModel = hil
     val playNextLabel = stringResource(R.string.action_play_next)
     val addQueueLabel = stringResource(R.string.action_add_to_queue)
     val addPlaylistLabel = stringResource(R.string.action_add_to_playlist)
+    val albumLabel = stringResource(R.string.track_open_album)
 
     LazyColumn(
         contentPadding = PaddingValues(top = contentPadding.calculateTopPadding() + 12.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
@@ -162,6 +168,8 @@ fun RandomScreen(contentPadding: PaddingValues, viewModel: RandomViewModel = hil
                             TrackAction(playNextLabel, Icons.AutoMirrored.Filled.PlaylistPlay) { viewModel.playNext(track) },
                             TrackAction(addQueueLabel, Icons.AutoMirrored.Filled.PlaylistAdd) { viewModel.addToQueue(track) },
                             TrackAction(addPlaylistLabel, Icons.Filled.Add) { addTracks = listOf(track.id) },
+                            // « Album » : ces listes mélangent les albums (comme le site).
+                            *listOfNotNull(track.album?.let { a -> TrackAction(albumLabel, Icons.Filled.Album) { onOpenAlbum(a.id) } }).toTypedArray(),
                         ),
                     )
                 }

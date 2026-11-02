@@ -3,7 +3,25 @@
 All notable changes to the app. Versions follow [Semantic Versioning](https://semver.org/);
 release candidates are published as GitHub pre-releases.
 
-## [1.0.0-rc.3] - unreleased
+## [1.0.0-rc.5] - 2026-11-02
+
+### Added
+
+- Shared remote control, as in the web player: create a link for a guest (who, how long, what they
+  can do), copy it, send it or show its QR code; list and revoke links. Share button in the queue,
+  lit while a link is active, and the guest's last action shown under it.
+- The app can be controlled by guests: it follows the server's real-time channel, applies the
+  commands meant for it (add, move, remove, jump, play, pause, next, volume) and reports its state.
+- Queue: "Endless mode" card at the top (switch, and where the added tracks come from), "Endless mode is
+  looking for tracks…" while it fills, and "Save as playlist" (the whole queue).
+- Playlists: description, edited with the name in "Edit playlist" (which also deletes it); move tracks
+  up and down; "Copy to my playlists" on another account's playlist, which opens the copy.
+- Albums: "Shuffle" sort, keeping the same order while scrolling.
+- Collection page, as in the web player: description, album count, "Shuffle" (100 tracks), "Endless
+  play in the collection", albums in the order chosen by the admin.
+- "Album" in the track menu of lists that mix albums (artist, search, favourites, playlists, shuffle).
+
+## [1.0.0-rc.3] - 2026-10-29
 
 ### Added
 

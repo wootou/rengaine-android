@@ -31,6 +31,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ClearAll
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Equalizer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,7 +56,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.rengaine.R
+import app.rengaine.playback.InfiniteMode
 import app.rengaine.playback.QueueEntry
+import app.rengaine.ui.playlists.AddToPlaylistDialog
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.AllInclusive
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.semantics.Role
 import app.rengaine.ui.components.formatDuration
 import app.rengaine.ui.theme.Rengaine
 import app.rengaine.ui.theme.RengaineShapes
@@ -64,12 +77,20 @@ import app.rengaine.ui.theme.RengaineShapes
  * × la retire. Appui long puis glisser : la piste change de place
  * (TalkBack : actions « Monter » et « Descendre », Q1).
  *
- * Pas encore : carte « Mode infini » (F5), enregistrer en playlist (F10).
+ * En haut, la carte « Mode infini » (interrupteur du réglage du compte,
+ * d'où viennent les pistes) ; « Enregistrer en playlist » envoie toute la
+ * file, pistes déjà jouées comprises, comme le site.
  */
 @Composable
-fun QueueScreen(onClose: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()) {
+fun QueueScreen(onClose: () -> Unit, onShare: () -> Unit = {}, viewModel: PlayerViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val queue by viewModel.queue.collectAsStateWithLifecycle()
+    val remoteAvailable by viewModel.remoteAvailable.collectAsStateWithLifecycle()
+    val remote by viewModel.remote.collectAsStateWithLifecycle()
+    val infiniteOn by viewModel.infiniteActive.collectAsStateWithLifecycle()
+    val infiniteSource by viewModel.infiniteSource.collectAsStateWithLifecycle()
+    val searching by viewModel.infiniteSearching.collectAsStateWithLifecycle()
+    var saving by remember { mutableStateOf<List<Long>?>(null) }
     val colors = Rengaine.colors
     val type = Rengaine.type
     val listState = rememberLazyListState()
@@ -130,10 +151,34 @@ fun QueueScreen(onClose: () -> Unit, viewModel: PlayerViewModel = hiltViewModel(
                     )
                 }
             }
+            IconButton(
+                onClick = { saving = queue.mapNotNull { it.trackId } },
+                enabled = queue.any { it.trackId != null },
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.PlaylistAdd,
+                    stringResource(R.string.queue_save_playlist),
+                    tint = if (queue.isNotEmpty()) colors.text else colors.faint,
+                )
+            }
             IconButton(onClick = onClose) {
                 Icon(Icons.Filled.Close, stringResource(R.string.action_close), tint = colors.text)
             }
         }
+
+        InfiniteCard(
+            on = infiniteOn,
+            subtitle = stringResource(
+                when {
+                    !infiniteOn -> R.string.queue_infinite_off
+                    infiniteSource == InfiniteMode.Source.CHOSEN_GENRES -> R.string.queue_infinite_chosen
+                    infiniteSource == InfiniteMode.Source.TARGET -> R.string.queue_infinite_target
+                    else -> R.string.queue_infinite_current
+                },
+            ),
+            onToggle = viewModel::toggleInfinite,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+        )
 
         Row(
             Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 4.dp),
@@ -152,6 +197,31 @@ fun QueueScreen(onClose: () -> Unit, viewModel: PlayerViewModel = hiltViewModel(
                     tint = if (state.hasNext) colors.text else colors.faint,
                 )
             }
+            if (remoteAvailable) {
+                // Comme le site : allumé (braise sur fond braise pâle) quand un lien est valable ;
+                // ouvre Réglages › Télécommande partagée.
+                val on = remote.sharesActive
+                IconButton(
+                    onClick = onShare,
+                    modifier = if (on) Modifier.background(colors.accentSoft, CircleShape) else Modifier,
+                ) {
+                    Icon(
+                        Icons.Filled.Share,
+                        stringResource(if (on) R.string.queue_share_on else R.string.queue_share),
+                        tint = if (on) colors.accent else colors.text,
+                    )
+                }
+            }
+        }
+        remote.lastAction?.let {
+            Text(
+                it,
+                style = type.secondary,
+                color = colors.muted,
+                modifier = Modifier
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
+                    .semantics { liveRegion = LiveRegionMode.Polite },
+            )
         }
 
         if (queue.isEmpty()) {
@@ -201,7 +271,56 @@ fun QueueScreen(onClose: () -> Unit, viewModel: PlayerViewModel = hiltViewModel(
                         },
                 )
             }
+            if (searching) {
+                item(key = "searching") {
+                    Text(
+                        stringResource(R.string.queue_infinite_searching),
+                        style = type.secondary,
+                        color = colors.muted,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp, vertical = 12.dp)
+                            .semantics { liveRegion = LiveRegionMode.Polite },
+                    )
+                }
+            }
         }
+    }
+    saving?.let { ids ->
+        AddToPlaylistDialog(trackIds = ids, subtitle = stringResource(R.string.queue_name), onDismiss = { saving = null })
+    }
+}
+
+/** Carte « Mode infini » : toute la carte bascule le réglage du compte, comme le bouton ∞ du lecteur. */
+@Composable
+private fun InfiniteCard(on: Boolean, subtitle: String, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = Rengaine.colors
+    val type = Rengaine.type
+    Row(
+        modifier
+            .fillMaxWidth()
+            .clip(RengaineShapes.card)
+            .background(colors.surface)
+            .toggleable(value = on, role = Role.Switch, onValueChange = { onToggle() })
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(Icons.Filled.AllInclusive, null, tint = if (on) colors.accent else colors.muted, modifier = Modifier.size(22.dp))
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.player_infinite), style = type.bodyStrong, color = colors.text)
+            Text(subtitle, style = type.secondary, color = colors.muted)
+        }
+        Switch(
+            checked = on,
+            onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = colors.accent,
+                checkedThumbColor = colors.onAccent,
+                uncheckedTrackColor = colors.surface,
+                uncheckedThumbColor = colors.muted,
+                uncheckedBorderColor = colors.line,
+            ),
+        )
     }
 }
 

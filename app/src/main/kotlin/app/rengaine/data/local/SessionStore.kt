@@ -88,6 +88,19 @@ class SessionStore @Inject constructor(
         store.edit { it[AUDIO_DIAGNOSTICS] = on }
     }
 
+    /**
+     * Identifiant de ce lecteur pour la télécommande (`deviceKey`), tiré au
+     * hasard une fois : c'est à lui que le serveur adresse les commandes des
+     * invités.
+     */
+    suspend fun remoteDeviceKey(): String {
+        store.data.first()[REMOTE_DEVICE_KEY]?.let { return it }
+        val bytes = ByteArray(18).also { java.security.SecureRandom().nextBytes(it) }
+        val key = android.util.Base64.encodeToString(bytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING)
+        store.edit { it[REMOTE_DEVICE_KEY] = key }
+        return key
+    }
+
     /** Albums affichés en liste plutôt qu'en grille de pochettes (propre à ce téléphone). */
     val albumsAsList: Flow<Boolean> = store.data.map { it[ALBUMS_AS_LIST] ?: false }
 
@@ -99,6 +112,7 @@ class SessionStore @Inject constructor(
         private val ALBUMS_AS_LIST = booleanPreferencesKey("albums_as_list")
         private val WAVEFORM_HIDDEN = booleanPreferencesKey("waveform_hidden")
         private val VOLUME_BAR_HIDDEN = booleanPreferencesKey("volume_bar_hidden")
+        private val REMOTE_DEVICE_KEY = stringPreferencesKey("remote_device_key")
         private val SIMPLIFIED_AUDIO = booleanPreferencesKey("simplified_audio")
         private val AUDIO_DIAGNOSTICS = booleanPreferencesKey("audio_diagnostics")
         const val DEFAULT_CACHE_SIZE_MB = 500

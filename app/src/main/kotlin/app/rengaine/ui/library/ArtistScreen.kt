@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -136,6 +137,7 @@ fun ArtistScreen(
             val playNextLabel = stringResource(R.string.action_play_next)
             val addQueueLabel = stringResource(R.string.action_add_to_queue)
             val addPlaylistLabel = stringResource(R.string.action_add_to_playlist)
+            val albumLabel = stringResource(R.string.track_open_album)
             LazyColumn(
                 contentPadding = PaddingValues(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding() + 16.dp),
                 modifier = Modifier.fillMaxSize(),
@@ -178,6 +180,8 @@ fun ArtistScreen(
                                 TrackAction(playNextLabel, Icons.AutoMirrored.Filled.PlaylistPlay) { viewModel.playNext(track) },
                                 TrackAction(addQueueLabel, Icons.AutoMirrored.Filled.PlaylistAdd) { viewModel.addToQueue(track) },
                                 TrackAction(addPlaylistLabel, Icons.Filled.Add) { addTracks = listOf(track.id) },
+                                // « Album » : ces listes mélangent les albums (comme le site).
+                                *listOfNotNull(track.album?.let { a -> TrackAction(albumLabel, Icons.Filled.Album) { onOpenAlbum(a.id) } }).toTypedArray(),
                             ),
                         )
                     }

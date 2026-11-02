@@ -55,6 +55,8 @@ fun RengaineTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     minHeight: Dp = 46.dp,
     fieldBackground: Color = Rengaine.colors.surface,
+    /** Faux pour un texte sur plusieurs lignes (description d'une playlist). */
+    singleLine: Boolean = true,
 ) {
     val colors = Rengaine.colors
     val type = Rengaine.type
@@ -77,7 +79,8 @@ fun RengaineTextField(
                 value = value,
                 onValueChange = onValueChange,
                 enabled = enabled,
-                singleLine = true,
+                singleLine = singleLine,
+                minLines = if (singleLine) 1 else 2,
                 textStyle = type.field.copy(color = colors.text),
                 cursorBrush = SolidColor(colors.accent),
                 keyboardOptions = keyboardOptions,

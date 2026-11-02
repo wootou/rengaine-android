@@ -53,6 +53,7 @@ data class PlaylistDetailDto(
 @Serializable
 data class PlaylistInputDto(
     val name: String,
+    val description: String? = null,
     val shared: Boolean = false,
     val trackIds: List<Long> = emptyList(),
 )
@@ -66,6 +67,10 @@ data class PlaylistPatchDto(
 
 @Serializable
 data class PlaylistAddDto(val trackIds: List<Long>)
+
+/** Corps de `PUT /playlists/{id}/items` : toutes les entrées, chacune une fois, dans le nouvel ordre. */
+@Serializable
+data class PlaylistOrderDto(val itemIds: List<Long>)
 
 @Serializable
 enum class FavoriteType {

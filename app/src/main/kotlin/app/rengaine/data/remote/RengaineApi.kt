@@ -1,10 +1,16 @@
 package app.rengaine.data.remote
 
 import app.rengaine.data.remote.dto.AcceptedResponse
+import app.rengaine.data.remote.dto.PlayerReportDto
+import app.rengaine.data.remote.dto.QueueShareCreatedDto
+import app.rengaine.data.remote.dto.QueueShareInputDto
+import app.rengaine.data.remote.dto.QueueShareListDto
+import app.rengaine.data.remote.dto.RealtimeChannelDto
 import app.rengaine.data.remote.dto.AlbumDetailDto
 import app.rengaine.data.remote.dto.AlbumPageDto
 import app.rengaine.data.remote.dto.ArtistDetailDto
 import app.rengaine.data.remote.dto.ArtistPageDto
+import app.rengaine.data.remote.dto.CollectionDetailDto
 import app.rengaine.data.remote.dto.CollectionListDto
 import app.rengaine.data.remote.dto.DecadeListDto
 import app.rengaine.data.remote.dto.FavoritePageDto
@@ -27,6 +33,7 @@ import app.rengaine.data.remote.dto.PlaylistAddDto
 import app.rengaine.data.remote.dto.PlaylistDetailDto
 import app.rengaine.data.remote.dto.PlaylistInputDto
 import app.rengaine.data.remote.dto.PlaylistListDto
+import app.rengaine.data.remote.dto.PlaylistOrderDto
 import app.rengaine.data.remote.dto.PlaylistPatchDto
 import kotlinx.serialization.json.JsonObject
 import app.rengaine.data.remote.dto.HistoryClearedDto
@@ -224,6 +231,10 @@ interface RengaineApi {
     @GET("collections")
     suspend fun listCollections(@Query("kind") kind: String = "collection"): Response<CollectionListDto>
 
+    /** Une collection et ses albums, dans l'ordre choisi par l'admin. */
+    @GET("collections/{id}")
+    suspend fun getCollection(@Path("id") id: Long): Response<CollectionDetailDto>
+
     @GET("decades")
     suspend fun listDecades(): Response<DecadeListDto>
 
@@ -239,9 +250,17 @@ interface RengaineApi {
     @POST("playlists")
     suspend fun createPlaylist(@Body body: PlaylistInputDto): Response<PlaylistDetailDto>
 
-    /** Renommer ou partager (créateur seulement, `403` sinon). */
+    /** Renommer, décrire ou partager (créateur seulement, `403` sinon). */
     @PATCH("playlists/{id}")
     suspend fun updatePlaylist(@Path("id") id: Long, @Body body: PlaylistPatchDto): Response<PlaylistDetailDto>
+
+    /**
+     * Même route, corps libre : la fenêtre « Modifier » envoie
+     * `description: null` pour l'effacer, comme le site, ce que
+     * `explicitNulls = false` ne permet pas avec [PlaylistPatchDto].
+     */
+    @PATCH("playlists/{id}")
+    suspend fun updatePlaylistRaw(@Path("id") id: Long, @Body body: JsonObject): Response<PlaylistDetailDto>
 
     @DELETE("playlists/{id}")
     suspend fun deletePlaylist(@Path("id") id: Long): Response<Unit>
@@ -249,6 +268,10 @@ interface RengaineApi {
     /** Ajout à la fin ; `409` au-delà de 5000 pistes. */
     @POST("playlists/{id}/items")
     suspend fun addPlaylistItems(@Path("id") id: Long, @Body body: PlaylistAddDto): Response<PlaylistDetailDto>
+
+    /** Nouvel ordre : toutes les entrées, chacune une fois. */
+    @PUT("playlists/{id}/items")
+    suspend fun reorderPlaylistItems(@Path("id") id: Long, @Body body: PlaylistOrderDto): Response<PlaylistDetailDto>
 
     @DELETE("playlists/{id}/items/{itemId}")
     suspend fun removePlaylistItem(@Path("id") id: Long, @Path("itemId") itemId: Long): Response<PlaylistDetailDto>
@@ -293,6 +316,23 @@ interface RengaineApi {
         @Query("yearTo") yearTo: Int? = null,
         @Query("collection") collection: Long? = null,
     ): Response<TrackListDto>
+
+    // --- Télécommande partagée (FUT-02) ---------------------------------------
+
+    @GET("me/shares")
+    suspend fun listShares(): Response<QueueShareListDto>
+
+    @POST("me/shares")
+    suspend fun createShare(@Body body: QueueShareInputDto): Response<QueueShareCreatedDto>
+
+    @DELETE("me/shares/{id}")
+    suspend fun revokeShare(@Path("id") id: Long): Response<Unit>
+
+    @GET("me/realtime")
+    suspend fun realtime(): Response<RealtimeChannelDto>
+
+    @PUT("me/player")
+    suspend fun reportPlayer(@Body body: PlayerReportDto): Response<Unit>
 }
 
 /** Liste d'identifiants au format `1,2,3` attendu par le contrat ; `null` si vide. */

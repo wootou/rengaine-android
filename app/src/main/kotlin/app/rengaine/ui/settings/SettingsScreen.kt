@@ -43,6 +43,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.rengaine.BuildConfig
 import app.rengaine.R
@@ -77,6 +80,8 @@ fun SettingsScreen(
     onOpenHistory: () -> Unit,
     onOpenLicences: () -> Unit,
     contentPadding: PaddingValues,
+    /** `"remote"` : ouvrir directement sur la télécommande partagée (bouton de la file). */
+    anchor: String = "",
     viewModel: SettingsViewModel = hiltViewModel(),
     accountVm: AccountViewModel = hiltViewModel(),
 ) {
@@ -110,7 +115,18 @@ fun SettingsScreen(
         uri?.let { accountVm.export(context.contentResolver, it) }
     }
 
+    val listState = rememberLazyListState()
+    // Arrivée par le bouton « Partager la file » : défilement jusqu'à la section (site : #telecommande).
+    LaunchedEffect(anchor) {
+        if (anchor == "remote") {
+            snapshotFlow { listState.layoutInfo.totalItemsCount }.first { it > REMOTE_INDEX_MAX }
+            val index = 5 + (if (state.showQuality) 1 else 0)
+            listState.animateScrollToItem(index)
+        }
+    }
+
     LazyColumn(
+        state = listState,
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp,
@@ -233,6 +249,8 @@ fun SettingsScreen(
             }
         }
 
+        item(key = "remote") { RemoteSharesSection() }
+
         item(key = "devices") {
             Section(stringResource(R.string.devices_title)) {
                 DevicesList(devices, onRevoke = accountVm::revoke, onRetry = accountVm::loadDevices)
@@ -317,6 +335,9 @@ fun SettingsScreen(
 }
 
 /** Section du site : filet au-dessus (sauf la première), titre, contenu. */
+/** Plus grand indice possible de la section « Télécommande partagée ». */
+private const val REMOTE_INDEX_MAX = 6
+
 @Composable
 internal fun Section(title: String, first: Boolean = false, content: @Composable () -> Unit) {
     val colors = Rengaine.colors

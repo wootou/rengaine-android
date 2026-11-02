@@ -79,6 +79,8 @@ private fun SignedInApp(state: RootState.SignedIn, viewModel: RootViewModel) {
         if (pendingPairing != null) nav.navigate(LoginRoute(reauth = false)) { launchSingleTop = true }
     }
 
+    var settingsAnchor by remember { mutableStateOf<String?>(null) }
+
     NavHost(
         navController = nav,
         startDestination = if (state.needsReauth) LoginRoute(reauth = true) else MainRoute,
@@ -89,6 +91,8 @@ private fun SignedInApp(state: RootState.SignedIn, viewModel: RootViewModel) {
                 onOpenAccounts = { nav.navigate(AccountsRoute) },
                 onOpenPlayer = { nav.navigate(PlayerRoute) { launchSingleTop = true } },
                 onOpenQueue = { nav.navigate(QueueRoute) { launchSingleTop = true } },
+                settingsAnchor = settingsAnchor,
+                onSettingsAnchorShown = { settingsAnchor = null },
             )
         }
         composable<PlayerRoute>(
@@ -105,7 +109,14 @@ private fun SignedInApp(state: RootState.SignedIn, viewModel: RootViewModel) {
             enterTransition = { slideInVertically { it } },
             popExitTransition = { slideOutVertically { it } },
         ) {
-            QueueScreen(onClose = { nav.popBackStack() })
+            QueueScreen(
+                onClose = { nav.popBackStack() },
+                // Comme le site : le bouton ouvre Réglages › Télécommande partagée.
+                onShare = {
+                    settingsAnchor = "remote"
+                    nav.popBackStack(MainRoute, inclusive = false)
+                },
+            )
         }
         composable<AccountsRoute> {
             AccountsScreen(
